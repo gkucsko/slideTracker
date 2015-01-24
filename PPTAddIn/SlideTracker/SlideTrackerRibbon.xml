@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
+  <ribbon>
+    <tabs>
+      <tab idMso="TabAddIns">
+        <group id="ContentGroup" label="SlideTracker" supertip="track your slides online">
+          <dropDown id="ShowIPAddress" label="Display tracking code on:" onAction="OnDropDownShowIP" visible="true" getSelectedItemID="GetSelectedShowIP">
+            <item id="all" label="All slides" />
+            <item id="first" label="First slide only" />
+          </dropDown>
+          <dropDown id="IPLocation" label="Banner Location:" onAction="OnBannerLocation" visible="true" getSelectedItemID="GetSelectedShowBanner">
+            <item id="BL" label="Bottom Left"/>
+            <item id ="BR" label="Bottom Right"/>
+            <item id ="TL" label="Top Left"/>
+            <item id="TR" label="Top right"/>
+          </dropDown>
+          <button id="Button" label="Start sharing" showLabel="true" size="large" imageMso="ConnectedToolSyncMenu"
+               screentip="Export" onAction="OnExportButton"
+               supertip="Exports all slides to png format."/>
+          <!--<editBox id="userName" label="Username:" screentip="enter your slide share username" onChange="GetUserName"/>-->
+        </group>
+      </tab>
+    </tabs>
+  </ribbon>
+</customUI>
+
