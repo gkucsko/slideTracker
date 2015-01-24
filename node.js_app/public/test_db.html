@@ -1,0 +1,64 @@
+<!-- index.html -->
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="app_t">
+<head>
+    <!-- META -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Optimize mobile viewport -->
+
+    <title>Test Presentation App</title>
+
+    <!-- SCROLLS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"><!-- load bootstrap -->
+    <link rel="stylesheet" href="/stylesheets/test.css">
+
+    <!-- SPELLS -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+
+</head>
+
+<body ng-controller='testController'>
+    <div class="container">
+
+        <!-- HEADER AND TODO COUNT -->
+        <div class="jumbotron text-center">
+            <h1>Get db entries</h1>
+        </div>
+
+        <!-- TODO LIST -->
+        <ul class="list-group">
+            <li ng-repeat="pres in presentations" class="list-group-item">
+                <!-- LOOP OVER THE TODOS IN $scope.todos -->
+                <div>
+                        {{ pres.pres_id }}
+                </div>
+
+            </li>
+        </ul>
+
+
+    </div>
+<script>
+
+var app_t = angular.module('app_t',[])
+app_t.controller('testController', function ($scope) {
+//test code
+$scope.presentations = [
+	{
+		pres_id: '12'
+	},
+	{
+		pres_id: '15'
+	}
+]
+})
+
+
+</script>
+
+</body>
+</html>
+
