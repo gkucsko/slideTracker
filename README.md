@@ -1,6 +1,9 @@
 # slideTracker
 Welcome to our slideTracker dev site. Since we just just started developing we appreciate help and discourage harsh criticism :) We are operating under MIT license, so please feel free to fork and contribute as much as you want!
 
+## What is SlideTracker
+SlideTracker provides a convenient way to an audience follow along with a presenter's PowerPoint slides or browse through the slides during a presentation using a browser. A main goal is to provide the client (audience) a simple interface with no additional software.
+
 ## Our Production Server:
 [http://www.slidetracker.org](http://www.slidetracker.org)
 
