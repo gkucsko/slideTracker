@@ -76,8 +76,8 @@ namespace SlideTracker
                 lab.Text = "uploading remote presentation...";
                 progressForm.Update();
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
-                lab.Text = "Done!";
-                progressForm.Update();
+                progressForm.Close();
+                System.Windows.Forms.MessageBox.Show("Done!");
             }
             catch
             {

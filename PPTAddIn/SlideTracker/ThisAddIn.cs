@@ -16,15 +16,15 @@ namespace SlideTracker
     {
         public string SlideDir = @"C:\";
         public string fmt = "png";
-        private string postURL = "http://slidetracker.org/api/v1/presentations"; // production server
-        //private string postURL = "http://dangerzone.elasticbeanstalk.com/api/v1/presentations";
+        private string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
+        //private string postURL = "http://www.dangerzone.elasticbeanstalk.com/api/v1/presentations";
         private string userAgent = "";
         private string pres_ID = "123"; //will be overwritten by info from server
         public string userName = ""; //will be taken from mac address of computer
         private string[] textBoxIds; //ids for text boxes with ip address
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
-        public bool debug = false; //write stuff to log file
+        public bool debug = true; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 85; // width in points of text box
