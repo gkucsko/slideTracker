@@ -1,0 +1,349 @@
+<!-- index.html -->
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html>
+	<head>
+		<!-- META -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- Optimize mobile viewport -->
+
+		<title>SlideTracker</title>
+
+		<!-- SCROLLS -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+		<!-- load bootstrap -->
+		<link rel="stylesheet" href="/stylesheets/jumbotron-narrow.css">
+
+		<!-- SPELLS -->
+		
+
+	</head>
+
+	<body>
+		<div id="wrap">
+			<a class="github-ribbon" href="https://github.com/gkucsko/slideTracker"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+			<div class="container">
+				<div class="header">
+					<nav>
+						<ul class="nav nav-pills pull-right">
+							<li>
+								<a class="btn btn-default" href="/download">Get your own</a>
+							</li>
+							<li>
+								<a class="prod-hide" href="/api-documentation">API</a>
+							</li>
+							<li>
+								<a class="prod-hide" href="/test/get_db">View DB</a>
+							</li>
+						</ul>
+					</nav>
+					<a class="img-link" href="/"><h3 class="text-muted">SlideTracker</h3></a>
+				</div>
+	
+				<div class="jumbotron">
+					<h1>API documentation</h1>
+					<p class="lead">
+						Use our API to quickly and easily access all of our services!
+					</p>
+				</div>
+	
+				<div>
+					<h3>Available endpoints</h3>
+					<div class="well well-sm">
+						<strong>POST</strong> /api/v1/presentations
+					</div>
+					<div class="well well-sm">
+						<strong>GET, PUT</strong> /api/v1/presentations/&lt;pres_ID&gt;
+					</div>
+					<div class="well well-sm">
+						<strong>PUT</strong> /api/v1/presentations/&lt;pres_ID&gt;/delete
+					</div>
+					<div class="well well-sm">
+						<strong>POST</strong> /api/v1/presentations/&lt;pres_ID&gt;/slides
+					</div>
+					<h3>API key</h3>
+					<div class="well well-sm">
+						<code>N3sN7AiWTFK9XNwSCn7um35joV6OFslL</code>
+					</div>
+					<h3>Create Presentations</h3>
+					<div>
+						Use to create a new presentation entry.
+					</div>
+					<div class="well well-sm">
+						<strong>POST</strong> /api/v1/presentations
+					</div>
+					<h5><strong>Parameters</strong></h5>
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+								<code>
+									key
+								</code></td>
+								<td>string</td>
+								<td>API key to verify you are not a bot.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									creator
+								</code></td>
+								<td>string</td>
+								<td>Name of creator of presentation. Should be the MAC address.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									n_slides
+								</code></td>
+								<td>number</td>
+								<td>Total number of slides in presentation.</td>
+							</tr>
+						</tbody>
+					</table>
+					<h5><strong>Response</strong></h5>
+					<div class="example">
+						<pre>
+	<strong>Status: 201 OK</strong>
+	[
+		{
+			"_id": 54b47569d133315452cabf67,
+			"pres_ID": 28123,
+			"creator": georg,
+			"n_slides": 5,
+			"cur_slide": 1,
+			"active": false,
+			"created": 2015-01-13T01:31:21.829Z,
+			"updated": 2015-01-13T01:31:21.829Z
+		}
+	]
+	   					</pre>
+					</div>
+					<h3>Get Presentation</h3>
+					<div>
+						Get all information about the specified presentation.
+					</div>
+					<div class="well well-sm">
+						<strong>GET</strong> /api/v1/presentations/&lt;pres_ID&gt;
+					</div>
+					<h5><strong>Response</strong></h5>
+					<div class="example">
+						<pre>
+	<strong>Status: 200 OK</strong>
+	[
+		{
+			"_id": 54b47569d133315452cabf67,
+			"pres_ID": 28123,
+			"creator": georg,
+			"n_slides": 5,
+			"cur_slide": 1,
+			"active": true,
+			"created": 2015-01-13T01:31:21.829Z,
+			"updated": 2015-01-13T01:31:21.829Z
+		}
+	]
+	   					</pre>
+					</div>
+					<h3>Update Presentations</h3>
+					<div>
+						Use to update information about the specified presentation.
+					</div>
+					<div class="well well-sm">
+						<strong>PUT</strong> /api/v1/presentations/&lt;pres_ID&gt;
+					</div>
+					<h5><strong>Parameters</strong></h5>
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+								<code>
+									key
+								</code></td>
+								<td>string</td>
+								<td>API key to verify you are not a bot.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									n_slides
+								</code></td>
+								<td>number</td>
+								<td>Total number of slides in the presentation.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									cur_slide
+								</code></td>
+								<td>number</td>
+								<td>Currently active slide.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									active
+								</code></td>
+								<td>boolean</td>
+								<td>Indicate if presentation is ready for broadcasting.</td>
+							</tr>
+						</tbody>
+					</table>
+					<h5><strong>Response</strong></h5>
+					<div class="example">
+						<pre>
+	<strong>Status: 201 OK</strong>
+	[
+		{
+			"_id": 54b47569d133315452cabf67,
+			"pres_ID": 28123,
+			"creator": georg,
+			"n_slides": 7,
+			"cur_slide": 2,
+			"active": true,
+			"created": 2015-01-13T01:31:21.829Z,
+			"updated": 2015-01-13T01:31:21.829Z
+		}
+	]
+	   					</pre>
+					</div>
+					<h3>Delete Presentations</h3>
+					<div>
+						Use to delete specified presentation and clean up.
+					</div>
+					<div class="well well-sm">
+						<strong>PUT</strong> /api/v1/presentations/&lt;pres_ID&gt;/delete
+					</div>
+					<h5><strong>Parameters</strong></h5>
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+								<code>
+									key
+								</code></td>
+								<td>string</td>
+								<td>API key to verify you are not a bot.</td>
+							</tr>
+						</tbody>
+					</table>
+					<h5><strong>Response</strong></h5>
+					<div class="example">
+						<pre>
+	<strong>Status: 200 OK</strong>
+	   					</pre>
+					</div>
+					<h3>Upload Slides</h3>
+					<div>
+						Use to upload slides to the specified presentation.
+					</div>
+					<div class="well well-sm">
+						<strong>POST</strong> /api/v1/presentations/&lt;pres_ID&gt;/slides
+					</div>
+					<h5><strong>Parameters</strong></h5>
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+								<code>
+									key
+								</code></td>
+								<td>string</td>
+								<td>API key to verify you are not a bot.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									slide_ID
+								</code></td>
+								<td>number</td>
+								<td>Number of uploaded slide, ie. 1-24.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									slide
+								</code></td>
+								<td>file</td>
+								<td>Slide file in <em>PNG</em> format. Mimetype has to be <em>image/png</em></td>
+							</tr>
+						</tbody>
+					</table>
+					<h5><strong>Response</strong></h5>
+					<div class="example">
+						<pre>
+	<strong>Status: 201 OK</strong>
+	[
+		{
+			"_id": 54b47569d133315452cabf67,
+			"pres_ID": 28123,
+			"creator": georg,
+			"n_slides": 5,
+			"cur_slide": 1,
+			"active": false,
+			"created": 2015-01-13T01:31:21.829Z,
+			"updated": 2015-01-13T01:31:21.829Z
+		}
+	]
+	   					</pre>
+					</div>
+				</div>
+
+			</div><!-- /container -->
+		</div>	<!-- /wrap -->
+
+		<div class="container">
+			<footer class="footer">
+			<p>
+				&copy; SlideTracker 2015 · <a href="/privacy">Privacy &amp; Terms</a> · <a href="/contact">Contact</a>
+			</p>
+			</footer>
+		</div>
+		
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+		
+		<!-- google analytics code -->
+		<script>
+		
+		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+		
+		  ga('create', 'UA-58643576-1', 'auto');
+		  ga('send', 'pageview');
+		
+		</script>
+		<!-- end google analytics code -->
+
+	</body>
+</html>
