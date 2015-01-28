@@ -13,14 +13,54 @@ html, body {
 	padding: 20px 0px 80px;
 }
 
+.team .img-holder {
+	width: 200px;
+	height: 220px;
+	margin: 0 auto;
+    line-height: 220px;
+}
+
 .team img {
-	width: 140px;
-	height: 140px;
-	border: #aaa 1px solid;
+	width: 200px;
+	height: auto;
+}
+
+.team #leander {
+	width: 150px;
+}
+
+.team #clemens-g {
+	width: 160px;
+}
+
+.team #clemens-f {
+	width: 160px;
+}
+
+.team #tt-camille {
+	width: 250px;
+	margin-left: -25px;
+}
+
+.team #lets-go {
+	width: 300px;
+	margin-left: -50px;
 }
 
 .margin-20 {
 	margin: 20px;
+}
+
+.margin-30-10 {
+	margin: 30px 10px;
+}
+
+.pull-left.margin-10-0 {
+margin: 10px 10px 10px 0px;
+}
+
+.pull-right.margin-10-0 {
+margin: 10px 0 10px 10px;
 }
 
 .text-justify {
@@ -66,6 +106,29 @@ html, body {
 	position: relative;
 }
 
+#fs-tracking-box {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	background-color: #333;
+	
+	display: none;
+}
+
+#fs-tracking-box img{
+	max-width: 100%;
+	max-height: 100%;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+	overflow: auto;
+	position: fixed;
+	right: 0;
+	top: 0;
+}
+
 #pres-not-found {
 	padding: 100px 0px;
 	width: 100%;
@@ -73,7 +136,7 @@ html, body {
 	text-align: center;
 }
 
-#slide-box {
+#tracking-box .slide-box {
 	padding: 5px;
 	border: 1px solid #DDD;
 	border-radius: 4px;
@@ -81,18 +144,85 @@ html, body {
 	display: none;
 }
 
-#slide-box img{
+#tracking-box .slide-box img{
 	width: 100%;
 	height: auto;
 	display: inline-block;
 }
 
-.slide-nav-btns {
+#tracking-box .slide-nav-btns {
 	padding-bottom: 10px;
 }
 
-#btn-track {
+#tracking-box #btn-track {
 	width: 100px;
+}
+
+#fs-tracking-box #fs-btn-track {
+	top: 10px;
+	left: 50%;
+	margin-left: -100px;
+	position: absolute;
+	z-index: 9;
+	width: 200px;
+	height: 100px;
+	line-height: 50px;
+}
+
+#fs-tracking-box #fs-prev-slide {
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	margin-top: -100px;
+	z-index: 9;
+	width: 100px;
+	height: 200px;
+	line-height: 100%;
+	font-size:30px;
+}
+
+#fs-tracking-box #fs-exit {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+	z-index: 9;
+	width: 100px;
+	height: 100px;
+	line-height: 100%;
+	font-size:30px;
+}
+
+#fs-tracking-box #fs-next-slide{
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	margin-top: -100px;
+	z-index: 9;
+	width: 100px;
+	height: 200px;
+	line-height: 100%;
+	font-size:30px;
+}
+
+#download-pres {
+	display: none;
+}
+
+.fs-btn {
+	font-weight: bold;
+	font-size: 20px;	
+	background: none;
+	border: none;
+	background-color: rgba(0,0,0,0.2);
+	color: #eee;
+	padding: 0;
+	margin: 0;	
+	border-radius: 5px;
+}
+
+.fs-btn:hover {
+	color: #fff;
+	background-color: rgba(0,0,0,0.6);	
 }
 
 .alt-text {

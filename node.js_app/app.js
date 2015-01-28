@@ -26,6 +26,10 @@ var fs = require('fs');
 // file uploads
 var multer = require('multer');
 
+// cron job
+var cron = require('cron');
+var CronJob = cron.CronJob;
+
 // amazon S3 storage
 //var AWS = require('aws-sdk');
 //AWS.config.update({region: 'us-east-1'});
@@ -69,7 +73,7 @@ app.use(multer({
 		return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
 	},
 	limits : {
-		fileSize : 2000000, // max 2 MB
+		fileSize : 10000000, // max 10 MB
 		files : 1
 	}
 }))
@@ -91,14 +95,54 @@ var presSchema = mongoose.Schema({
 	n_slides : Number,
 	cur_slide : Number,
 	active : Boolean,
+	download : Boolean,
 	created : Date,
 	updated : Date
 })
 
+presSchema.methods.toJSON = function() {
+  var obj = this.toObject()
+  delete obj._id
+  return obj
+}
+
 var Presentation = mongoose.model('Presentation', presSchema)
+
+//define delete CRON job
+new CronJob('00 00 * * *', function(){
+	//find presentations older than 1 day
+	var cutoff = new Date();
+	cutoff.setDate(cutoff.getDate()-1);
+	Presentation.find({updated: {$lt: cutoff}})
+	.exec(function(err, pres) {
+			if (err) {
+				res.status(400).json(err);
+				return;
+			}
+			if (pres[0]) {				
+				for (i = 0; i < pres.length; i++) {
+					
+					console.log('deleted: '+pres[i].pres_ID);
+					
+					// delete database entry
+					Presentation.find({ 'pres_ID' : pres[i].pres_ID }).remove().exec();
+			
+					// delete folder and files
+					rimraf('./public/files/' + pres[i].pres_ID, function(req, res) { });   				
+				}				
+			}
+	});
+}, null, true, "America/New_York");
 
 // create presentation
 app.post('/api/v1/presentations', function(req, res) {
+
+	// check inputs	
+	if (!req.body.key || !req.body.creator || !req.body.n_slides) {
+		var err = 'sorry, problem with input parameters';
+		res.status(400).json(err);
+		return;
+	}
 	
 	// check key
 	if (req.body.key != apiKey) {
@@ -108,14 +152,8 @@ app.post('/api/v1/presentations', function(req, res) {
 	}
 	var response = {};
 	
-	//check if inputs set
-	if (!req.body.creator || !req.body.n_slides) {
-		var err = 'sorry, problem with input parameters';
-		res.status(400).json(err);
-		return;
-	}
-	// generate a random integer 100.000-999.999
-	var pres_ID = Math.floor((Math.random() * 899999) + 100000);
+	// generate a random integer 10.000-99.999
+	var pres_ID = Math.floor((Math.random() * 89999) + 10000);
 	
 	//check if pres_ID already taken
 	Presentation.find({ 'pres_ID' : pres_ID })
@@ -144,6 +182,7 @@ app.post('/api/v1/presentations', function(req, res) {
 			n_slides : n_slides,
 			cur_slide : cur_slide,
 			active : false,
+			download : false,
 			created : created,
 			updated : updated
 		});
@@ -153,12 +192,12 @@ app.post('/api/v1/presentations', function(req, res) {
 			if (err) {
 				res.status(400).json(err);
 				return;
+			}else{
+				fs.mkdir('./public/files/' + pres_ID);
+				var passHash = new_pres._id;		
+				res.status(201).json({ presentation: new_pres , passHash: passHash });
 			}
 		});
-
-		fs.mkdir('./public/files/' + pres_ID);
-
-		res.status(201).json(new_pres);
 	});
 });
 
@@ -177,17 +216,20 @@ app.get('/api/v1/presentations/:pres_ID', function(req, res) {
 // update presentation
 app.put('/api/v1/presentations/:pres_ID', function(req, res) {
 	
+	// check inputs	
+	if (!req.body.key || !req.body.passHash || !req.body.cur_slide || !req.body.n_slides || !req.body.active) {
+		var err = 'incorrect input';
+		res.status(400).json(err);
+		return;
+	}
+	
 	// check key
 	if (req.body.key != apiKey) {
 		var err = 'sorry, you are not authorized';
 		res.status(401).json(err);
 		return;
 	}
-	if (!req.body.cur_slide || !req.body.n_slides || !req.body.active) {
-		var err = 'incorrect input';
-		res.status(400).json(err);
-		return;
-	}
+	
 	Presentation.find({ 'pres_ID' : req.params.pres_ID })
 	.exec(function(err, pres) {
 		if (err) {
@@ -199,7 +241,16 @@ app.put('/api/v1/presentations/:pres_ID', function(req, res) {
 			return;
 		}
 		var r_pres = pres[0];
+		
+		// check password
+		if (req.body.passHash != r_pres._id) {
+			var err = 'sorry, you need to verify this is your presentation';
+			res.status(401).json(err);
+			return;
+		}		
+		
 		r_pres.cur_slide = req.body.cur_slide;
+		r_pres.n_slides = req.body.n_slides;
 		r_pres.active = req.body.active;
 		var now = new Date();
 		var updated = now.toJSON();
@@ -209,7 +260,7 @@ app.put('/api/v1/presentations/:pres_ID', function(req, res) {
 				res.status(400).json(err);
 				return;
 			}
-			res.status(200).json(r_pres);
+			res.status(200).json({ presentation: r_pres });
 		});
 		if (r_pres.active) {
 			io.emit('update', req.params.pres_ID);
@@ -220,27 +271,60 @@ app.put('/api/v1/presentations/:pres_ID', function(req, res) {
 // delete presentation
 app.put('/api/v1/presentations/:pres_ID/delete', function(req, res) {
 	
+	if (!req.body.key || !req.body.passHash) {
+		var err = 'sorry, problem with input parameters';
+		res.status(400).json(err);
+		return;
+	}
+	
 	// check key
 	if (req.body.key != apiKey) {
 		var err = 'sorry, you are not authorized';
 		res.status(401).json(err);
 		return;
 	}
-	
-	// send finish command to clients
-	io.emit('quit', req.params.pres_ID);
-	
-	// delete database entry
-	Presentation.find({ 'pres_ID' : req.params.pres_ID }).remove().exec();
-	
-	// delete folder and files
-	rimraf('./public/files/' + req.params.pres_ID, function(req, res) { });
-	res.status(200).json('deleted');
+
+	Presentation.find({ 'pres_ID' : req.params.pres_ID })
+	.exec(function(err, pres) {
+		if (err) {
+			res.status(400).json(err);
+			return;
+		}
+		if (!pres[0]) {
+			res.status(200).json('didnt find presentation, so no deletion needed');;
+			return;
+		}
+		var r_pres = pres[0];
+		
+		// check password
+		if (req.body.passHash != r_pres._id) {
+			var err = 'sorry, you need to verify this is your presentation';
+			res.status(401).json(err);
+			return;
+		}else{
+			// send finish command to clients
+			io.emit('quit', req.params.pres_ID);
+			
+			// delete database entry
+			Presentation.find({ 'pres_ID' : req.params.pres_ID }).remove().exec();
+			
+			// delete folder and files
+			rimraf('./public/files/' + req.params.pres_ID, function(req, res) { });
+			res.status(200).json('deleted');
+		}	
+	});
 });
 
 // handle slide uploads
 app.post('/api/v1/presentations/:pres_ID/slides', function(req, res) {
-	
+
+	// test inputs
+	if (!req.body.key || !req.body.passHash || !req.params.pres_ID || !req.body.slide_ID || !req.files) {
+		var err = 'sorry, problem with input parameters';
+		res.status(400).json(err);
+		return;
+	}
+
 	// check key
 	if (req.body.key != apiKey) {
 		var err = 'sorry, you are not authorized';
@@ -248,12 +332,7 @@ app.post('/api/v1/presentations/:pres_ID/slides', function(req, res) {
 		return;
 	}
 	var response = {};
-	if (!req.params.pres_ID || !req.body.slide_ID || !req.files) {
-		var err = 'sorry, problem with input parameters';
-		res.status(400).json(err);
-		return;
-	}
-	
+
 	//check if correct filetype
 	if (req.files.slide.mimetype != 'image/png' || req.files.slide.extension != 'PNG') {
 		var err = 'sorry, problem with file extension';
@@ -264,14 +343,119 @@ app.post('/api/v1/presentations/:pres_ID/slides', function(req, res) {
 	var slide_ID = req.body.slide_ID;
 	var old_filename = req.files.slide.name;
 	
-	//check if slide file already exists
-	if (fs.existsSync('./public/files/' + pres_ID + '/Slide' + slide_ID + '.PNG')) {
-		var err = 'sorry, slide already exists';
+	Presentation.find({ 'pres_ID' : req.params.pres_ID })
+	.exec(function(err, pres) {
+		if (err) {
+			res.status(400).json(err);
+			return;
+		}		
+		if (!pres[0]) {
+			res.status(400).json('did not find presention');
+			return;
+		}
+		var r_pres = pres[0];
+		
+		// check password
+		if (req.body.passHash != r_pres._id) {
+			var err = 'sorry, you need to verify this is your presentation';
+			res.status(401).json(err);
+			return;
+		}else{
+		
+			//check if slide file already exists
+			if (fs.existsSync('./public/files/' + pres_ID + '/Slide' + slide_ID + '.PNG')) {
+				var err = 'sorry, slide already exists';
+				res.status(400).json(err);
+				return;
+			}
+			fs.rename('./uploads/' + old_filename, './public/files/' + pres_ID + '/Slide' + slide_ID + '.PNG');
+			res.status(201).json('upload succeeded!');
+		}
+	});
+});
+
+// handle PDF uploads
+app.post('/api/v1/presentations/:pres_ID/presentation', function(req, res) {
+
+	// test inputs
+	if (!req.body.key || !req.body.passHash || !req.params.pres_ID || !req.files) {
+		var err = 'sorry, problem with input parameters';
 		res.status(400).json(err);
 		return;
 	}
-	fs.rename('./uploads/' + old_filename, './public/files/' + pres_ID + '/Slide' + slide_ID + '.PNG');
-	res.status(201).json('upload succeeded!');
+	
+	// check key
+	if (req.body.key != apiKey) {
+		var err = 'sorry, you are not authorized';
+		res.status(401).json(err);
+		return;
+	}
+	var response = {};
+	
+	//check if correct filetype
+	if (req.files.pres.mimetype != 'application/pdf' || req.files.pres.extension != 'pdf') {
+		var err = 'sorry, problem with file extension';
+		res.status(400).json(err);
+		return;
+	}
+	var pres_ID = req.params.pres_ID;
+	var old_filename = req.files.pres.name;
+	
+	Presentation.find({ 'pres_ID' : req.params.pres_ID })
+	.exec(function(err, pres) {
+		if (err) {
+			res.status(400).json(err);
+			return;
+		}
+		if (!pres[0]) {
+			res.status(400).json('did not find presention');
+			return;
+		}
+		var r_pres = pres[0];
+		
+		// check password
+		if (req.body.passHash != r_pres._id) {
+			var err = 'sorry, you need to verify this is your presentation';
+			res.status(401).json(err);
+			return;
+		}else{
+	
+			//check if slide file already exists
+			if (fs.existsSync('./public/files/' + pres_ID + '/presentation.pdf')) {
+				var err = 'sorry, pdf already exists';
+				res.status(400).json(err);
+				return;
+			}
+			
+			//update database entry
+			Presentation.find({ 'pres_ID' : req.params.pres_ID })
+			.exec(function(err, pres) {
+				if (err) {
+					res.status(400).json(err);
+					return;
+				}
+				if (!pres[0]) {
+					res.status(400).json('did not find presention');
+					return;
+				}
+				var r_pres = pres[0];
+				r_pres.download = true;
+				var now = new Date();
+				var updated = now.toJSON();
+				r_pres.updated = updated;
+				r_pres.save(function(err) {
+					if (err) {
+						res.status(400).json(err);
+						return;
+					}else{
+						fs.rename('./uploads/' + old_filename, './public/files/' + pres_ID + '/presentation.pdf');
+						res.status(201).json('upload succeeded!');
+					}
+				});
+		
+			});
+		}
+	});
 });
 
 // call for checking if successful connection can be established

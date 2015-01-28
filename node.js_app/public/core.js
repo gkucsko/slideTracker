@@ -8,6 +8,7 @@ function mainController($scope, $http) {
 	$scope.presentation = {};
 	$scope.presentation.n_slides = 0;
 	$scope.tracking = true;
+	$scope.fullscreen = false;
 
 	//get requested presentation ID
 	var url = $(location).attr('href').split('/').splice(0, 5).join('/');
@@ -41,9 +42,15 @@ function mainController($scope, $http) {
 						$('#prev-slide').attr('disabled', 'disabled');
 					}
 					$scope.slide_alt_text = '';
-					$('#slide-box').css('display','inline-block');
+					$('#tracking-box .slide-box').css('display','inline-block');
 					$('#btn-track').html('tracking...');
 					$('#btn-track').attr('disabled', 'disabled');
+					//check if download available
+					var file_url = '/files/'+$scope.pres_ID+'/presentation.pdf';	
+				    if ($scope.presentation.download){
+						$('#download-pres').attr('href',file_url);
+						$('#download-pres').css('display','block');	
+				    }
 				}
 			}
 		}).error(function(data) {
@@ -57,7 +64,7 @@ function mainController($scope, $http) {
 		$scope.presentation.n_slides = 0;
 		$scope.slide_alt_text = 'presentation finished';
 		$scope.$apply();
-		$('#slide-box').css('display','none');		
+		$('#tracking-box .slide-box').css('display','none');		
 		$scope.slide_src = '';
 		$scope.$apply();
 	};
@@ -117,7 +124,7 @@ function mainController($scope, $http) {
 					}
 					$('#prev-slide').removeAttr('disabled', 'disabled');
 					$scope.slide_alt_text = '';
-					$('#slide-box').css('display','inline-block');
+					$('#tracking-box .slide-box').css('display','inline-block');
 				}
 			}
 		}).error(function(data) {
@@ -149,14 +156,28 @@ function mainController($scope, $http) {
 					}
 					$('#next-slide').removeAttr('disabled', 'disabled');
 					$scope.slide_alt_text = '';
-					$('#slide-box').css('display','inline-block');
+					$('#tracking-box .slide-box').css('display','inline-block');
 				}
 			}
 		}).error(function(data) {
 			console.log('Error: ' + data);
 		});
 	};
+	
+	// go to fullscreen
+	$scope.fullscreen = function() {
+		$('#fs-tracking-box').css('display', 'block');
+		$scope.fullscreen = true;
+		//$scope.$apply();
+	};
 
+	// exit fullscreen
+	$scope.fs_exit = function() {
+		$('#fs-tracking-box').css('display', 'none');
+		$scope.fullscreen = false;
+		//$scope.$apply();
+	};
+	
 	// track presentation
 	socket.on('update', function(pres_ID) {
 		if (pres_ID == $scope.pres_ID && $scope.tracking) {
@@ -178,5 +199,8 @@ function mainController($scope, $http) {
 	// start tracking on initial load
 	$scope.current();
 
+
 }
+
+
 
