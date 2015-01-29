@@ -63,6 +63,9 @@
 					<div class="well well-sm">
 						<strong>POST</strong> /api/v1/presentations/&lt;pres_ID&gt;/slides
 					</div>
+					<div class="well well-sm">
+						<strong>POST</strong> /api/v1/presentations/&lt;pres_ID&gt;/presentation
+					</div>
 					<h3>API key</h3>
 					<div class="well well-sm">
 						<code>N3sN7AiWTFK9XNwSCn7um35joV6OFslL</code>
@@ -295,6 +298,59 @@
 								</code></td>
 								<td>file</td>
 								<td>Slide file in <em>PNG</em> format. Mimetype has to be <em>image/png</em></td>
+							</tr>
+						</tbody>
+					</table>
+					<h5><strong>Response</strong></h5>
+					<div class="example">
+						<pre>
+	<strong>Status: 201 OK</strong>
+	[
+		{
+			"_id": 54b47569d133315452cabf67,
+			"pres_ID": 28123,
+			"creator": georg,
+			"n_slides": 5,
+			"cur_slide": 1,
+			"active": false,
+			"created": 2015-01-13T01:31:21.829Z,
+			"updated": 2015-01-13T01:31:21.829Z
+		}
+	]
+	   					</pre>
+					</div>
+					<h3>Upload Presentation File</h3>
+					<div>
+						Use to upload PDF version of presentation.
+					</div>
+					<div class="well well-sm">
+						<strong>POST</strong> /api/v1/presentations/&lt;pres_ID&gt;/presentation
+					</div>
+					<h5><strong>Parameters</strong></h5>
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>
+								<code>
+									key
+								</code></td>
+								<td>string</td>
+								<td>API key to verify you are not a bot.</td>
+							</tr>
+							<tr>
+								<td>
+								<code>
+									pres
+								</code></td>
+								<td>file</td>
+								<td>Slide file in <em>pdf</em> format. Mimetype has to be <em>application/pdf</em></td>
 							</tr>
 						</tbody>
 					</table>

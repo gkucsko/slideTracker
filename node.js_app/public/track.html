@@ -53,10 +53,23 @@
 						<button type="submit" id='btn-track' class="btn btn-primary btn-med" disabled="disabled" ng-click="track()">done</button>
 						<button type="submit" id="next-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="next()">></button>
 					</div>
-					<span id="slide-box">
+					<span class="slide-box">
 						<img alt="" ng-src="{{slide_src}}"/>									
 					</span>
+					<button type="submit" id="fs-btn" class="btn btn-primary btn-med pull-right margin-10-0" ng-click="fullscreen()">Fullscreen</button>
+					<a href="#" type="button" id="download-pres" class="btn btn-primary btn-med pull-left margin-10-0">
+						<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Download
+					</a>
 					<div class="alt-text">{{slide_alt_text}}</div>
+				</div>
+				<div id="fs-tracking-box">
+					<span class="slide-box">
+						<button type="submit" id="fs-prev-slide" class="fs-btn" ng-click="previous()"><</button>
+						<button type="submit" id='fs-btn-track' class="fs-btn" ng-click="track()">done</button>
+						<button type="submit" id="fs-next-slide" class="fs-btn" ng-click="next()">></button>
+						<button type="submit" id="fs-exit" class="fs-btn" ng-click="fs_exit()">x</button>
+						<img alt="" ng-src="{{slide_src}}"/>										
+					</span>
 				</div>
 				<div id='pres-not-found'>
 					<h3>presentation ID not found...</h3>
@@ -81,6 +94,18 @@
 			$("#submit-code").click(function() {
 				var code = $("#fp-code-input input").val();
 				if (code) {window.location.href = "/track/"+code;} else {$("#fp-code-input input").focus()}
+			});
+			
+			// make fullscreen controls vanish on 2s inactivity
+			var t_controls = null;
+			var isHovered = null;
+			$("#fs-tracking-box").mousemove(function() {
+				clearTimeout(t_controls);
+				$("#fs-tracking-box .fs-btn").removeAttr('style');
+				t_controls = setTimeout('$("#fs-tracking-box .fs-btn").fadeOut();', 2000);
+			}).mouseleave(function() {
+				clearTimeout(t_controls);
+				$("#fs-tracking-box .fs-btn").fadeOut();  
 			});
 		</script>
 	
