@@ -16,15 +16,17 @@ namespace SlideTracker
     {
         public string SlideDir = @"C:\";
         public string fmt = "png";
-        private string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
-        //private string postURL = "http://www.dangerzone.elasticbeanstalk.com/api/v1/presentations";
+        //private string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
+        private string postURL = "http://54.208.192.158/api/v1/presentations"; //dev server
         private string userAgent = "";
+        public string privateHash = "foobar";
         private string pres_ID = "123"; //will be overwritten by info from server
         public string userName = ""; //will be taken from mac address of computer
         private string[] textBoxIds; //ids for text boxes with ip address
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
-        public bool debug = true; //write stuff to log file
+        public bool allowDownload = false;// allow others to download pdf from website
+        public bool debug = false; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 85; // width in points of text box
@@ -47,11 +49,20 @@ namespace SlideTracker
             GenerateTempDir();
             this.logFile = this.SlideDir + "\\log.txt";
             System.IO.File.Delete(this.logFile);
+            File.Create(this.logFile).Dispose();
+            logWrite("Starting up");
         }
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
-            DeleteRemotePresentation();
+            try
+            {
+                DeleteRemotePresentation();
+            }
+            catch
+            {
+                if (this.debug) { logWrite("problems deleting remote presentation"); }
+            }
             if (this.debug) { logWrite("deleting remote presentation"); }
         }
 
@@ -111,7 +122,8 @@ namespace SlideTracker
             StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
             string fullResponse = responseReader.ReadToEnd();
             webResponse.Close();
-            this.pres_ID = GetPresIDFromJson(fullResponse);
+            this.pres_ID = GetInfoFromJson(fullResponse,"pres_ID");
+            this.privateHash = GetInfoFromJson(fullResponse,"passHash");
             return fullResponse;
         }
 
@@ -130,16 +142,28 @@ namespace SlideTracker
                     break;
                 }
                 //lab.Text = "Done with " + count + "of " + files.Length;
-                //f.Show();
                 if (this.debug)
                 {
                     logWrite("uploaded " + file + " response = " + resp);
                 }
                 count++;
             }
+            //upload pdf if wanted
+            if (this.allowDownload)
+            {
+                string presName = "presentation.pdf";
+                Dictionary<string, object> postParameters = new Dictionary<string, object>();
+                FileStream fs = new FileStream(this.SlideDir + "/" + presName, FileMode.Open, FileAccess.Read);
+                byte[] data = new byte[fs.Length];
+                fs.Read(data, 0, data.Length);
+                fs.Close();
+                postParameters.Add("pres", new FormUpload.FileParameter(data, presName, "application/pdf"));
+                HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID + "/presentation/",
+                 this.userAgent, postParameters); //leaving out optional operation string. defaults to "POST"
+            }
+
             string readyResp = this.MarkAsReady();
             if (this.debug) { logWrite(readyResp); }
-            //f.Close();
             return "done uploading files";
         }
 
@@ -197,15 +221,17 @@ namespace SlideTracker
             webResponse.Close();
         }
 
-        private string GetPresIDFromJson(string json)
+        private string GetInfoFromJson(string json, string field)
         {
             string[] separators = { ",", ".", "!", "?", ";", ":", " ", "{", "}" };
             string[] words = json.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < words.Length; i++)
             {
                 words[i] = words[i].Replace("\"", ""); //remove quotes
+                //logWrite(words[i]);
             }
-            int idx = Array.IndexOf(words, "pres_ID");
+            int idx = Array.IndexOf(words, field);
+            //if (this.debug) { logWrite("found" +  words[idx] + ":  " + words[idx + 1]); }
             return words[idx + 1];
         }
 

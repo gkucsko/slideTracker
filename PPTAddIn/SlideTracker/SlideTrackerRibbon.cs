@@ -33,6 +33,8 @@ namespace SlideTracker
     public class SlideTrackerRibbon : Office.IRibbonExtensibility
     {
         bool startup = false; // starts as false. after initializing will be true
+        bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
+        bool displayOptionsGroup = false;
         private Office.IRibbonUI ribbon;
 
         public SlideTrackerRibbon()
@@ -56,10 +58,62 @@ namespace SlideTracker
             this.ribbon = ribbonUI;
         }
 
+        public bool IsStopButtonVisible(Office.IRibbonControl control)
+        {
+            return displayStopButton;
+        }
+
+        public bool IsExportButtonVisible(Office.IRibbonControl control)
+        {
+            return !displayStopButton;
+        }
+
+        public bool DisplayOptionsGroup(Office.IRibbonControl control)
+        {
+            return displayOptionsGroup;
+        }
+
+        public bool OptionsVisible(Office.IRibbonControl contro)
+        {
+            return !displayOptionsGroup;
+        }
+
+        public bool OptioinsNotVisible(Office.IRibbonControl control)
+        {
+            return displayOptionsGroup;
+        }
+
+        public void ToggleDisplay(Office.IRibbonControl control)
+        {
+            displayOptionsGroup = !displayOptionsGroup;
+            this.ribbon.InvalidateControl("OptionsGroup");
+            GetToggleDisplayLabel(control);
+        }
+
+        public string GetToggleDisplayLabel(Office.IRibbonControl control)
+        {
+            string ret;
+            if (displayOptionsGroup)
+            {
+                ret = "Hide Options";
+            }
+            else
+            {
+                ret = "Show Options";
+            }
+            this.ribbon.InvalidateControl("HideOptionsButton");
+            return ret;
+        }
+        
         public void OnExportButton(Office.IRibbonControl control)
         {
             Globals.ThisAddIn.uploadSuccess = true;
             Globals.ThisAddIn.Application.ActivePresentation.Export(Globals.ThisAddIn.SlideDir, Globals.ThisAddIn.fmt);
+            if (Globals.ThisAddIn.allowDownload)
+            {
+                Globals.ThisAddIn.Application.ActivePresentation.ExportAsFixedFormat(
+                    Globals.ThisAddIn.SlideDir + "/presentation.pdf", PPT.PpFixedFormatType.ppFixedFormatTypePDF);
+            }
             try
             {
                 System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
@@ -78,12 +132,35 @@ namespace SlideTracker
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
                 progressForm.Close();
                 System.Windows.Forms.MessageBox.Show("Done!");
+                displayStopButton = true;
+                this.ribbon.InvalidateControl("BroadcastButton");
+                this.ribbon.InvalidateControl("StopBroadcast");
             }
             catch
             {
                 Globals.ThisAddIn.uploadSuccess = false;
                 System.Windows.Forms.MessageBox.Show("Problem communicating with server. Disabling add-in");
             }
+
+        }
+
+        public void OnStopBroadcast(Office.IRibbonControl control)
+        {
+            //delete remote pres, delete all slide files in slideDir, update button
+            Globals.ThisAddIn.DeleteRemotePresentation();
+            DirectoryInfo dirInfo = new DirectoryInfo(Globals.ThisAddIn.SlideDir);
+            foreach(FileInfo fi in dirInfo.GetFiles("*." + Globals.ThisAddIn.fmt)) //dont delete log file
+            {
+                fi.Delete();
+            }
+            displayStopButton = false;
+            this.ribbon.InvalidateControl("BroadcastButton");
+            this.ribbon.InvalidateControl("StopBroadcast");
+        }
+
+        public void OnAllowDownload(Office.IRibbonControl control,bool isClicked)
+        {
+            Globals.ThisAddIn.allowDownload = isClicked;
         }
 
         public void OnDropDownShowIP(Office.IRibbonControl control, string selectedId, int selectedIndex)

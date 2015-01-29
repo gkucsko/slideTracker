@@ -3,7 +3,13 @@
   <ribbon>
     <tabs>
       <tab idMso="TabAddIns">
-        <group id="ContentGroup" label="SlideTracker" supertip="track your slides online">
+
+        <group id="ToggleDispGroup">
+          <button id="HideOptionsButton" showLabel="true" size="large" imageMso="ToolboxGallery" visible ="true"
+                  onAction="ToggleDisplay" getLabel="GetToggleDisplayLabel"/>
+        </group>
+        
+        <group id="OptionsGroup" label="SlideTracker" supertip="track your slides online" getVisible="DisplayOptionsGroup">
           <dropDown id="ShowIPAddress" label="Display tracking code on:" onAction="OnDropDownShowIP" visible="true" getSelectedItemID="GetSelectedShowIP">
             <item id="all" label="All slides" />
             <item id="first" label="First slide only" />
@@ -14,10 +20,15 @@
             <item id ="TL" label="Top Left"/>
             <item id="TR" label="Top right"/>
           </dropDown>
-          <button id="Button" label="Start sharing" showLabel="true" size="large" imageMso="ConnectedToolSyncMenu"
-               screentip="Export" onAction="OnExportButton"
-               supertip="Exports all slides to png format."/>
-          <!--<editBox id="userName" label="Username:" screentip="enter your slide share username" onChange="GetUserName"/>-->
+          <checkBox id="AllowDownload" label="Allow pdf download" onAction="OnAllowDownload" screentip="allow viewers to download pdf"/>
+        </group>
+        
+        <group id="BroadcastGroup">
+          <button id="BroadcastButton" label="Start sharing" showLabel="true" size="large" imageMso="ConnectedToolSyncMenu" getVisible="IsExportButtonVisible"
+              screentip="Export" onAction="OnExportButton"
+              supertip="Exports slides for others to track."/>
+          <button id="StopBroadcast" label="Stop Broadcasting" showLabel="true" size="large" imageMso="PreviewClose"
+               screentip="stop broadcasting" onAction="OnStopBroadcast" getVisible="IsStopButtonVisible"/>
         </group>
       </tab>
     </tabs>

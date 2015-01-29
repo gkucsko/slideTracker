@@ -15,6 +15,7 @@ namespace SlideTracker
         public static HttpWebResponse MultipartFormDataPost(string postUrl, string userAgent, Dictionary<string, object> postParameters, string operation = "POST")
         {
             postParameters.Add("key", "N3sN7AiWTFK9XNwSCn7um35joV6OFslL"); //add key to all forms
+            postParameters.Add("passHash", Globals.ThisAddIn.privateHash);
             string formDataBoundary = String.Format("----------{0:N}", Guid.NewGuid());
             string contentType = "multipart/form-data; boundary=" + formDataBoundary;
             byte[] formData = GetMultipartFormData(postParameters, formDataBoundary);
