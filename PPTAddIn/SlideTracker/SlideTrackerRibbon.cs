@@ -153,6 +153,11 @@ namespace SlideTracker
             {
                 fi.Delete();
             }
+            //now delete the pdf file (if exists)
+            foreach (FileInfo fi in dirInfo.GetFiles("*.pdf"))
+            {
+                fi.Delete();
+            }
             displayStopButton = false;
             this.ribbon.InvalidateControl("BroadcastButton");
             this.ribbon.InvalidateControl("StopBroadcast");

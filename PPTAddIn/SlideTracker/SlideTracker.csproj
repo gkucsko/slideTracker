@@ -40,8 +40,8 @@
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>days</UpdateIntervalUnits>
     <ProductName>SlideTracker</ProductName>
-    <PublisherName />
-    <SupportUrl />
+    <PublisherName>Georg Kucsko</PublisherName>
+    <SupportUrl>http://www.slidetracker.org</SupportUrl>
     <FriendlyName>SlideTracker</FriendlyName>
     <OfficeApplicationDescription />
     <LoadBehavior>3</LoadBehavior>
