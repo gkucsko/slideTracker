@@ -225,6 +225,21 @@ margin: 10px 0 10px 10px;
 	background-color: rgba(0,0,0,0.6);	
 }
 
+.fs-btn[disabled="disabled"] {
+    display: none;
+}
+
+#fs-btn-track[disabled="disabled"] {
+    display: block;
+    background: none;
+    color: #aaa;
+}
+
+#fs-btn-track[disabled="disabled"]:hover {
+    background: none;
+    color: #aaa;
+}
+
 .alt-text {
 	text-align: center;
 	font-size: 38px;

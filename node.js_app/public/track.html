@@ -56,7 +56,7 @@
 					<span class="slide-box">
 						<img alt="" ng-src="{{slide_src}}"/>									
 					</span>
-					<button type="submit" id="fullscreen" class="btn btn-primary btn-med pull-right margin-10-0" ng-click="fullscreen()">Fullscreen</button>
+					<button type="submit" id="fs-btn" class="btn btn-primary btn-med pull-right margin-10-0" ng-click="fullscreen()">Fullscreen</button>
 					<a href="#" type="button" id="download-pres" class="btn btn-primary btn-med pull-left margin-10-0">
 						<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Download
 					</a>
@@ -94,6 +94,18 @@
 			$("#submit-code").click(function() {
 				var code = $("#fp-code-input input").val();
 				if (code) {window.location.href = "/track/"+code;} else {$("#fp-code-input input").focus()}
+			});
+			
+			// make fullscreen controls vanish on 2s inactivity
+			var t_controls = null;
+			var isHovered = null;
+			$("#fs-tracking-box").mousemove(function() {
+				clearTimeout(t_controls);
+				$("#fs-tracking-box .fs-btn").removeAttr('style');
+				t_controls = setTimeout('$("#fs-tracking-box .fs-btn").fadeOut();', 2000);
+			}).mouseleave(function() {
+				clearTimeout(t_controls);
+				$("#fs-tracking-box .fs-btn").fadeOut();  
 			});
 		</script>
 	

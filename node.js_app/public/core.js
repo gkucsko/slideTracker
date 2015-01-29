@@ -1,14 +1,16 @@
 var slideTrack = angular.module('slideTrack', []);
 var socket = io();
 
-function mainController($scope, $http) {
+slideTrack.controller('mainController', function ($scope, $http) {
+
+//function mainController($scope, $http) {
 
 	$scope.slide_alt_text = 'loading...';
 	$scope.cur_slide = 0;
 	$scope.presentation = {};
 	$scope.presentation.n_slides = 0;
 	$scope.tracking = true;
-	$scope.fullscreen = false;
+	$scope.bFs = false;
 
 	//get requested presentation ID
 	var url = $(location).attr('href').split('/').splice(0, 5).join('/');
@@ -18,6 +20,8 @@ function mainController($scope, $http) {
 		$scope.tracking = true;
 		$('#btn-track').html('tracking...');
 		$('#btn-track').attr('disabled', 'disabled');
+		$('#fs-btn-track').html('tracking...');
+		$('#fs-btn-track').attr('disabled', 'disabled');
 		$scope.current();
 	};
 
@@ -35,16 +39,22 @@ function mainController($scope, $http) {
 					$scope.slide_src = '/files/' + $scope.pres_ID + '/Slide' + $scope.cur_slide + '.PNG';
 					$('#next-slide').removeAttr('disabled', 'disabled');
 					$('#prev-slide').removeAttr('disabled', 'disabled');
+					$('#fs-next-slide').removeAttr('disabled', 'disabled');
+					$('#fs-prev-slide').removeAttr('disabled', 'disabled');
 					if (parseInt($scope.cur_slide) >= $scope.presentation.n_slides) {
 						$('#next-slide').attr('disabled', 'disabled');
+						$('#fs-next-slide').attr('disabled', 'disabled');
 					}
 					if (parseInt($scope.cur_slide) <= 1) {
 						$('#prev-slide').attr('disabled', 'disabled');
+						$('#fs-prev-slide').attr('disabled', 'disabled');
 					}
 					$scope.slide_alt_text = '';
 					$('#tracking-box .slide-box').css('display','inline-block');
 					$('#btn-track').html('tracking...');
 					$('#btn-track').attr('disabled', 'disabled');
+					$('#fs-btn-track').html('tracking...');
+					$('#fs-btn-track').attr('disabled', 'disabled');
 					//check if download available
 					var file_url = '/files/'+$scope.pres_ID+'/presentation.pdf';	
 				    if ($scope.presentation.download){
@@ -63,10 +73,11 @@ function mainController($scope, $http) {
 		$scope.cur_slide = 0;
 		$scope.presentation.n_slides = 0;
 		$scope.slide_alt_text = 'presentation finished';
-		$scope.$apply();
-		$('#tracking-box .slide-box').css('display','none');		
+		$('#tracking-box .slide-box').css('display','none');
+		$('#download-pres').css('display','none');
+		$('#fs-btn').css('display','none');	
 		$scope.slide_src = '';
-		$scope.$apply();
+		$scope.fs_exit();
 	};
 
 	//create presentation not found behaviour
@@ -106,6 +117,8 @@ function mainController($scope, $http) {
 			$scope.tracking = false;
 			$('#btn-track').html('track');
 			$('#btn-track').removeAttr('disabled', 'disabled');
+			$('#fs-btn-track').html('track');
+			$('#fs-btn-track').removeAttr('disabled', 'disabled');
 			if (!data[0]) {
 				$scope.slide_alt_text = 'presentation not found';
 			} else {
@@ -116,6 +129,7 @@ function mainController($scope, $http) {
 					//check if we are at end of presentation
 					if (parseInt($scope.cur_slide) + 1 >= $scope.presentation.n_slides) {
 						$('#next-slide').attr('disabled', 'disabled');
+						$('#fs-next-slide').attr('disabled', 'disabled');
 						$scope.cur_slide = $scope.presentation.n_slides;
 						$scope.slide_src = '/files/' + $scope.pres_ID + '/Slide' + $scope.cur_slide + '.PNG';
 					} else {
@@ -123,6 +137,7 @@ function mainController($scope, $http) {
 						$scope.slide_src = '/files/' + $scope.pres_ID + '/Slide' + $scope.cur_slide + '.PNG';
 					}
 					$('#prev-slide').removeAttr('disabled', 'disabled');
+					$('#fs-prev-slide').removeAttr('disabled', 'disabled');
 					$scope.slide_alt_text = '';
 					$('#tracking-box .slide-box').css('display','inline-block');
 				}
@@ -138,6 +153,8 @@ function mainController($scope, $http) {
 			$scope.tracking = false;
 			$('#btn-track').html('track');
 			$('#btn-track').removeAttr('disabled', 'disabled');
+			$('#fs-btn-track').html('track');
+			$('#fs-btn-track').removeAttr('disabled', 'disabled');
 			if (!data[0]) {
 				$scope.slide_alt_text = 'presentation not found';
 			} else {
@@ -148,6 +165,7 @@ function mainController($scope, $http) {
 					//check if we are at beginning of presentation
 					if (parseInt($scope.cur_slide) - 1 <= 1) {
 						$('#prev-slide').attr('disabled', 'disabled');
+						$('#fs-prev-slide').attr('disabled', 'disabled');
 						$scope.cur_slide = 1;
 						$scope.slide_src = '/files/' + $scope.pres_ID + '/Slide' + $scope.cur_slide + '.PNG';
 					} else {
@@ -155,6 +173,7 @@ function mainController($scope, $http) {
 						$scope.slide_src = '/files/' + $scope.pres_ID + '/Slide' + $scope.cur_slide + '.PNG';
 					}
 					$('#next-slide').removeAttr('disabled', 'disabled');
+					$('#fs-next-slide').removeAttr('disabled', 'disabled');
 					$scope.slide_alt_text = '';
 					$('#tracking-box .slide-box').css('display','inline-block');
 				}
@@ -167,15 +186,13 @@ function mainController($scope, $http) {
 	// go to fullscreen
 	$scope.fullscreen = function() {
 		$('#fs-tracking-box').css('display', 'block');
-		$scope.fullscreen = true;
-		//$scope.$apply();
+		$scope.bFs = true;
 	};
 
 	// exit fullscreen
 	$scope.fs_exit = function() {
 		$('#fs-tracking-box').css('display', 'none');
-		$scope.fullscreen = false;
-		//$scope.$apply();
+		$scope.bFs = false;
 	};
 	
 	// track presentation
@@ -192,6 +209,10 @@ function mainController($scope, $http) {
 			$('#prev-slide').attr('disabled', 'disabled');
 			$('#btn-track').html('done');
 			$('#btn-track').attr('disabled', 'disabled');
+			$('#fs-next-slide').attr('disabled', 'disabled');
+			$('#fs-prev-slide').attr('disabled', 'disabled');
+			$('#fs-btn-track').html('done');
+			$('#fs-btn-track').attr('disabled', 'disabled');
 			$scope.quit();
 		}
 	});
@@ -200,7 +221,7 @@ function mainController($scope, $http) {
 	$scope.current();
 
 
-}
-
+//}
+});
 
 
