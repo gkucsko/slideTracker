@@ -318,6 +318,9 @@ $RECYCLE.BIN/
 *.zip
 *.png
 *.ppt
+*.jpg
+*.jpeg
+*.pdf
 
 # Ignore paths that contain user-generated content.
 node.js_app/node_modules
