@@ -77,6 +77,7 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		$('#download-pres').css('display','none');
 		$('#fs-btn').css('display','none');	
 		$scope.slide_src = '';
+		$scope.$apply();
 		$scope.fs_exit();
 	};
 
