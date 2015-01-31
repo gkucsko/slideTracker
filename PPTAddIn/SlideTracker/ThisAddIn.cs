@@ -14,12 +14,12 @@ namespace SlideTracker
 {
     public partial class ThisAddIn
     {
-        public string SlideDir = @"C:\";
-        public string fmt = "png";
+        public string SlideDir = @"C:\"; //won't get used. assigned a random temp directory upon exporting
+        public string fmt = "png"; //export the slides to
         //private string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
         private string postURL = "http://54.208.192.158/api/v1/presentations"; //dev server
-        private string userAgent = "";
-        public string privateHash = "foobar";
+        private string userAgent = ""; //not really used. could be anything. for future development
+        public string privateHash = "foobar"; //will get set when creating remote pres
         private string pres_ID = "123"; //will be overwritten by info from server
         public string userName = ""; //will be taken from mac address of computer
         private string[] textBoxIds; //ids for text boxes with ip address
@@ -31,8 +31,9 @@ namespace SlideTracker
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 85; // width in points of text box
         public float height = 30; // height in points of text box
-        public bool uploadSuccess = false;
-        private string logFile = @"";
+        public bool uploadSuccess = false; // set to true upon success in upload
+        private bool failedDuringPresentation = false; //will be set to true if things fail during pres
+        private string logFile = @""; //file to write log notes
 
         #region Slide Show Functions
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
@@ -43,14 +44,13 @@ namespace SlideTracker
                 new PowerPoint.EApplication_SlideShowBeginEventHandler(Application_SlideShowBegin);
             this.Application.SlideShowEnd +=
                 new PowerPoint.EApplication_SlideShowEndEventHandler(Application_SlideEnd);
-            //Application.SlideShowEnd += Application_SlideEnd;
             this.Application.SlideShowNextSlide +=
                 new PowerPoint.EApplication_SlideShowNextSlideEventHandler(Application_SlideShowNextSlide);
             GenerateTempDir();
             this.logFile = this.SlideDir + "\\log.txt";
             System.IO.File.Delete(this.logFile);
-            File.Create(this.logFile).Dispose();
-            logWrite("Starting up");
+            File.Create(this.logFile).Dispose(); //makes an empty file.
+            if (this.debug) { logWrite("Starting up"); }
         }
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
@@ -82,9 +82,13 @@ namespace SlideTracker
 
         void Application_SlideEnd(PowerPoint.Presentation Pr)
         {
-            if (this.uploadSuccess)
+            if (this.textBoxIds.Length >0)
             {
                 DeleteBannerFromAll();
+                if (this.failedDuringPresentation)
+                {
+                    System.Windows.Forms.MessageBox.Show("Contact with server lost during presentation.");
+                }
                 if (this.debug) { logWrite("ending Show "); }
             }
         }
@@ -98,6 +102,7 @@ namespace SlideTracker
         }
         #endregion
 
+        #region Communication with server
         public string CreateRemotePresentation()
         {
             NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
@@ -124,11 +129,17 @@ namespace SlideTracker
             webResponse.Close();
             this.pres_ID = GetInfoFromJson(fullResponse,"pres_ID");
             this.privateHash = GetInfoFromJson(fullResponse,"passHash");
+            if (this.debug)
+            {
+                logWrite("pres_ID: " + this.pres_ID);
+                logWrite("privateHash: " + this.privateHash); //needed for all future communication
+            }
             return fullResponse;
         }
 
         public string UploadRemotePresentation()
         {
+            //upload all slides and, if allowed pdf presentation to server
             int count = 1;
             string[] files = System.IO.Directory.GetFiles(this.SlideDir, "*." + this.fmt);
             for (int fileInd = 0; fileInd < files.Length; fileInd++)
@@ -141,7 +152,6 @@ namespace SlideTracker
                     this.uploadSuccess = false;
                     break;
                 }
-                //lab.Text = "Done with " + count + "of " + files.Length;
                 if (this.debug)
                 {
                     logWrite("uploaded " + file + " response = " + resp);
@@ -149,7 +159,7 @@ namespace SlideTracker
                 count++;
             }
             //upload pdf if wanted
-            if (this.allowDownload)
+            if (this.allowDownload) //gets set in ribbon
             {
                 string presName = "presentation.pdf";
                 Dictionary<string, object> postParameters = new Dictionary<string, object>();
@@ -169,6 +179,7 @@ namespace SlideTracker
 
         private string UploadRemoteSlide(int slide_ID, string fileName)
         {
+            //upload a single slide to server
             Dictionary<string, object> postParameters = new Dictionary<string, object>();
             postParameters.Add("slide_ID", "" + slide_ID);
             FileStream fs = new FileStream(this.SlideDir + "/" + fileName, FileMode.Open, FileAccess.Read);
@@ -190,6 +201,7 @@ namespace SlideTracker
 
         public string MarkAsReady()
         {
+            //turns active to 'true' on the remote server.
             if (!this.uploadSuccess)
             {
                 return "";
@@ -206,23 +218,56 @@ namespace SlideTracker
             return fullResponse;
         }
 
+        public void UpdateCurrentSlide(int slideNumber)
+        {
+            //try to update the current slide on the server.
+            // if it fails, deletes the ID banners from the presentation
+            if (!this.uploadSuccess) { return; } //shouldn't be necessary but doesn't hurt
+            Dictionary<string, object> postParameters = new Dictionary<string, object>();
+            postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
+            postParameters.Add("cur_slide", "" + slideNumber);
+            postParameters.Add("active", "true");
+            try
+            {
+                HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID,
+                this.userAgent, postParameters, "PUT");
+                StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+                string fullResponse = responseReader.ReadToEnd();
+                if (this.debug) { logWrite(fullResponse); }
+                webResponse.Close();
+            }
+            catch
+            {
+                this.uploadSuccess = false; //should prevent this function from ever getting called again
+                this.failedDuringPresentation = true;
+                DeleteBannerFromAll();
+                return;
+            }
+        }
+
         public void DeleteRemotePresentation()
         {
+            //deletes the presentation on the remote server. No longer viewable.
             Dictionary<string, object> postParameters = new Dictionary<string, object>();
-            //postParameters.Add("key", "N3sN7AiWTFK9XNwSCn7um35joV6OFslL");
-            HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID + "/delete",
-                 this.userAgent, postParameters, "PUT");
-            StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
-            string fullResponse = responseReader.ReadToEnd();
-            if (this.debug)
+            try
             {
-                logWrite("deleteing presentation. response:  " + fullResponse);
+                HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID + "/delete",
+                     this.userAgent, postParameters, "PUT");
+                StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+                string fullResponse = responseReader.ReadToEnd();
+                webResponse.Close();
+                if (this.debug) { logWrite("deleteing presentation. response:  " + fullResponse); }
             }
-            webResponse.Close();
+            catch
+            {
+                if (this.debug) { logWrite("Problems deleting presentation "+  this.pres_ID + "orphan files likely"); }
+            }
         }
+        #endregion
 
         private string GetInfoFromJson(string json, string field)
         {
+            //hack around actually parsing json. returns the next item (string) after finding field
             string[] separators = { ",", ".", "!", "?", ";", ":", " ", "{", "}" };
             string[] words = json.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < words.Length; i++)
@@ -238,7 +283,7 @@ namespace SlideTracker
         public static string GetTempDir()
         {
             string tempFolder = System.IO.Path.GetTempPath() + "slideShare_" + System.IO.Path.GetRandomFileName();
-            return tempFolder;
+            return tempFolder; //won't actually create it. gets created in GenerateTempDir
         }
 
         public void GenerateTempDir()
@@ -249,21 +294,6 @@ namespace SlideTracker
             dirName = dirName.Substring(0, lastPeriod);
             this.SlideDir = dirName;
             System.IO.Directory.CreateDirectory(dirName);
-        }
-
-        public void UpdateCurrentSlide(int slideNumber)
-        {
-            Dictionary<string, object> postParameters = new Dictionary<string, object>();
-            postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
-            postParameters.Add("cur_slide", "" + slideNumber);
-            postParameters.Add("active", "true");
-            //postParameters.Add("key", "N3sN7AiWTFK9XNwSCn7um35joV6OFslL");
-            HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID,
-                 this.userAgent, postParameters, "PUT");
-            StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
-            string fullResponse = responseReader.ReadToEnd();
-            if (this.debug) { logWrite(fullResponse); }
-            webResponse.Close();
         }
 
         private void AddBannerToAll(string banner)
@@ -312,11 +342,14 @@ namespace SlideTracker
 
         private void DeleteBannerFromAll()
         {
+            //deletes the text boxes and rectangles. sets the this.rectangledIds and this.texBoxIds to empty
             for (int i = 0; i < this.textBoxIds.Length; i++)
             {
                 this.Application.ActivePresentation.Slides[i + 1].Shapes[this.rectangleIds[i]].Delete();
                 this.Application.ActivePresentation.Slides[i + 1].Shapes[this.textBoxIds[i]].Delete();
             }
+            this.rectangleIds = new string[0];
+            this.textBoxIds = new string[0]; 
             if (this.debug) { logWrite("deleted IP address banners"); }
         }
   

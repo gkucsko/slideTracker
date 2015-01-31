@@ -48,7 +48,10 @@ namespace SlideTracker
             {
                 requestStream.Write(formData, 0, formData.Length);
                 requestStream.Close();
-                Globals.ThisAddIn.logWrite("Form data length:" + formData.Length);
+                if (Globals.ThisAddIn.debug)
+                {
+                    Globals.ThisAddIn.logWrite("Form data length:" + formData.Length);
+                }
             }
 
             return request.GetResponse() as HttpWebResponse;

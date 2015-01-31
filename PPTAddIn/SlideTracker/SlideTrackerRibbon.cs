@@ -32,10 +32,10 @@ namespace SlideTracker
     [ComVisible(true)]
     public class SlideTrackerRibbon : Office.IRibbonExtensibility
     {
-        bool startup = false; // starts as false. after initializing will be true
+        bool startup = false; // starts as false. after initializing will be true. for setting default options
         bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
-        bool displayOptionsGroup = false;
-        private Office.IRibbonUI ribbon;
+        bool displayOptionsGroup = false; //is the options group displayed
+        private Office.IRibbonUI ribbon; //the ribbon object
 
         public SlideTrackerRibbon()
         {
@@ -114,9 +114,9 @@ namespace SlideTracker
                 Globals.ThisAddIn.Application.ActivePresentation.ExportAsFixedFormat(
                     Globals.ThisAddIn.SlideDir + "/presentation.pdf", PPT.PpFixedFormatType.ppFixedFormatTypePDF);
             }
+            System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
             try
             {
-                System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
                 System.Windows.Forms.Label lab = new System.Windows.Forms.Label();
                 progressForm.Size = new System.Drawing.Size(350, 150);
                 progressForm.Text = "Uploade Progress";
@@ -130,22 +130,28 @@ namespace SlideTracker
                 lab.Text = "uploading remote presentation...";
                 progressForm.Update();
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
-                progressForm.Close();
+                //progressForm.Close();
                 System.Windows.Forms.MessageBox.Show("Done!");
                 displayStopButton = true;
-                this.ribbon.InvalidateControl("BroadcastButton");
-                this.ribbon.InvalidateControl("StopBroadcast");
+                this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
+                this.ribbon.InvalidateControl("StopBroadcast"); //update display
             }
             catch
             {
                 Globals.ThisAddIn.uploadSuccess = false;
-                System.Windows.Forms.MessageBox.Show("Problem communicating with server. Disabling add-in");
+                System.Windows.Forms.MessageBox.Show("Problem communicating with server. Check internet connection and try again");
+                //progressForm.Close();
+            }
+            finally
+            {
+                if (!progressForm.IsDisposed) { progressForm.Close(); }
             }
 
         }
 
         public void OnStopBroadcast(Office.IRibbonControl control)
         {
+            //gets called when the StopBroadcast button is pressed
             //delete remote pres, delete all slide files in slideDir, update button
             Globals.ThisAddIn.DeleteRemotePresentation();
             DirectoryInfo dirInfo = new DirectoryInfo(Globals.ThisAddIn.SlideDir);
@@ -163,8 +169,9 @@ namespace SlideTracker
             this.ribbon.InvalidateControl("StopBroadcast");
         }
 
-        public void OnAllowDownload(Office.IRibbonControl control,bool isClicked)
+        public void OnAllowDownload(Office.IRibbonControl control, bool isClicked)
         {
+            //gets called when the AllowDownload button is checked/unchecked
             Globals.ThisAddIn.allowDownload = isClicked;
         }
 
@@ -174,10 +181,10 @@ namespace SlideTracker
         }
 
         public string GetSelectedShowIP(Office.IRibbonControl control)
-        //set default dropdown menu to "all"
-        //this is a hack and will break if we change the order of things
-        //relies on the fact that this one loads before the next dropdown menu
         {
+            //set default dropdown menu to "all"
+            //this is a hack and will break if we change the order of things
+            //relies on the fact that this one loads before the next dropdown menu
             if (startup)
             {
                 return control.Id;

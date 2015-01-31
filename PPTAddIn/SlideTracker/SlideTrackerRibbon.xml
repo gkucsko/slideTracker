@@ -20,7 +20,8 @@
             <item id ="TL" label="Top Left"/>
             <item id="TR" label="Top right"/>
           </dropDown>
-          <checkBox id="AllowDownload" label="Allow pdf download" onAction="OnAllowDownload" screentip="allow viewers to download pdf"/>
+          <checkBox id="AllowDownload" label="Allow pdf download" onAction="OnAllowDownload" screentip="allow viewers to download pdf"
+                    supertip="Hidden slides will be viewable"/>
         </group>
         
         <group id="BroadcastGroup">
