@@ -161,11 +161,11 @@ margin: 10px 0 10px 10px;
 #fs-tracking-box #fs-btn-track {
 	top: 10px;
 	left: 50%;
-	margin-left: -100px;
+	margin-left: -75px;
 	position: absolute;
 	z-index: 9;
-	width: 200px;
-	height: 100px;
+	width: 150px;
+	height: 50px;
 	line-height: 50px;
 }
 
@@ -173,11 +173,11 @@ margin: 10px 0 10px 10px;
 	position: absolute;
 	left: 10px;
 	top: 50%;
-	margin-top: -100px;
+	margin-top: -50px;
 	z-index: 9;
-	width: 100px;
-	height: 200px;
-	line-height: 100%;
+	width: 50px;
+	height: 100px;
+	line-height: 100px;
 	font-size:30px;
 }
 
@@ -186,9 +186,9 @@ margin: 10px 0 10px 10px;
 	right: 10px;
 	top: 10px;
 	z-index: 9;
-	width: 100px;
-	height: 100px;
-	line-height: 100%;
+	width: 50px;
+	height: 50px;
+	line-height: 50px;
 	font-size:30px;
 }
 
@@ -196,11 +196,11 @@ margin: 10px 0 10px 10px;
 	position: absolute;
 	right: 10px;
 	top: 50%;
-	margin-top: -100px;
+	margin-top: -50px;
 	z-index: 9;
-	width: 100px;
-	height: 200px;
-	line-height: 100%;
+	width: 50px;
+	height: 100px;
+	line-height: 100px;
 	font-size:30px;
 }
 
@@ -365,4 +365,52 @@ content: "Example";
   .jumbotron {
     border-bottom: 0;
   }
+}
+
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 768px) {
+  /* Remove the padding we set earlier */
+  .header,
+  .marketing,
+  .footer {
+    padding-right: 0;
+    padding-left: 0;
+  }
+  /* Space out the masthead */
+  .header {
+    margin-bottom: 30px;
+  }
+  /* Remove the bottom border on the jumbotron for visual effect */
+  .jumbotron {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width : 480px) {
+.prod-hide {
+	display: none!important;
+}
+#fs-tracking-box #fs-btn-track {
+	margin-left: -60px;
+	width: 120px;
+	height: 30px;
+	line-height: 30px;
+}
+#fs-tracking-box #fs-prev-slide {
+	margin-top: -30px;
+	width: 30px;
+	height: 60px;
+	line-height: 60px;
+}
+#fs-tracking-box #fs-exit {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+}
+#fs-tracking-box #fs-next-slide{
+	margin-top: -30px;
+	width: 30px;
+	height: 60px;
+	line-height: 60px;
+}
 }

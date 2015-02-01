@@ -492,13 +492,17 @@ app.get('/contact', function(req, res) {
 	res.sendfile('./public/contact.html');
 });
 
-app.get('/test/get_db', function(req, res) {
+app.get('/admin/get_db_entries', function(req, res) {
 	Presentation.find().exec(function(err, presentations) {
 		if (err) {
 			return next(err)
 		}
 		res.status(200).json(presentations)
 	})
+});
+
+app.get('/admin', function(req, res) {
+	res.sendfile('./public/admin.html');
 });
 
 // app.get('/test/s3', function(req, res) {
