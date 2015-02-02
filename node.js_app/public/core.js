@@ -1,5 +1,8 @@
 var slideTrack = angular.module('slideTrack', []);
-var socket = io();
+
+//get requested presentation ID
+var url = $(location).attr('href').split('/').splice(0, 5).join('/');
+var socket = io('http://localhost', { query: "pres_ID="+url.substr(url.lastIndexOf('/') + 1) });
 
 slideTrack.controller('mainController', function ($scope, $http) {
 
@@ -13,7 +16,6 @@ slideTrack.controller('mainController', function ($scope, $http) {
 	$scope.bFs = false;
 
 	//get requested presentation ID
-	var url = $(location).attr('href').split('/').splice(0, 5).join('/');
 	$scope.pres_ID = url.substr(url.lastIndexOf('/') + 1);
 
 	$scope.track = function() {
@@ -41,6 +43,7 @@ slideTrack.controller('mainController', function ($scope, $http) {
 					$('#prev-slide').removeAttr('disabled', 'disabled');
 					$('#fs-next-slide').removeAttr('disabled', 'disabled');
 					$('#fs-prev-slide').removeAttr('disabled', 'disabled');
+					$('#fs-btn').removeAttr('disabled', 'disabled');
 					if (parseInt($scope.cur_slide) >= $scope.presentation.n_slides) {
 						$('#next-slide').attr('disabled', 'disabled');
 						$('#fs-next-slide').attr('disabled', 'disabled');
@@ -74,8 +77,8 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		$scope.presentation.n_slides = 0;
 		$scope.slide_alt_text = 'presentation finished';
 		$('#tracking-box .slide-box').css('display','none');
-		$('#download-pres').css('display','none');
-		$('#fs-btn').css('display','none');	
+		$('#download-pres').css('display','none');	
+		$('#fs-btn').attr('disabled', 'disabled');
 		$scope.slide_src = '';
 		$scope.$apply();
 		$scope.fs_exit();
@@ -176,7 +179,7 @@ slideTrack.controller('mainController', function ($scope, $http) {
 						$scope.slide_src = '/files/' + $scope.pres_ID + '/Slide' + $scope.cur_slide + '.PNG';
 					}
 					$('#next-slide').removeAttr('disabled', 'disabled');
-					$('#fs-next-slide').removeAttr('disabled', 'disabled');
+					$('#fs-next-slide').removeAttr('disabled', 'disabled');					
 					$scope.slide_alt_text = '';
 					$('#tracking-box .slide-box').css('display','inline-block');
 				}
