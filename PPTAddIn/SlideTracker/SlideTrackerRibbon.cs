@@ -36,7 +36,7 @@ namespace SlideTracker
         bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
         bool displayOptionsGroup = false; //is the options group displayed
         private Office.IRibbonUI ribbon; //the ribbon object
-
+        internal static Office.IRibbonUI ribbon1;
         public SlideTrackerRibbon()
         {
         }
@@ -56,6 +56,7 @@ namespace SlideTracker
         public void Ribbon_Load(Office.IRibbonUI ribbonUI)
         {
             this.ribbon = ribbonUI;
+            ribbon1 = ribbonUI;
         }
 
         public bool IsStopButtonVisible(Office.IRibbonControl control)
@@ -108,33 +109,47 @@ namespace SlideTracker
         public void OnExportButton(Office.IRibbonControl control)
         {
             Globals.ThisAddIn.uploadSuccess = true;
+            System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
+            System.Windows.Forms.Label lab = new System.Windows.Forms.Label();
+            progressForm.Size = new System.Drawing.Size(350, 150);
+            progressForm.Text = "Upload Progress";
+            lab.Text = "Exporting files to " + Globals.ThisAddIn.fmt;
+            lab.Font = new System.Drawing.Font("Arial", 12);
+            lab.Size = new System.Drawing.Size(340, 140);
+            progressForm.Controls.Add(lab);
+            progressForm.Show();
+            progressForm.Update();
+
             Globals.ThisAddIn.Application.ActivePresentation.Export(Globals.ThisAddIn.SlideDir, Globals.ThisAddIn.fmt);
             if (Globals.ThisAddIn.allowDownload)
             {
                 Globals.ThisAddIn.Application.ActivePresentation.ExportAsFixedFormat(
                     Globals.ThisAddIn.SlideDir + "/presentation.pdf", PPT.PpFixedFormatType.ppFixedFormatTypePDF);
             }
-            System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
             try
             {
-                System.Windows.Forms.Label lab = new System.Windows.Forms.Label();
-                progressForm.Size = new System.Drawing.Size(350, 150);
-                progressForm.Text = "Uploade Progress";
                 lab.Text = "Contacting server... This may take a moment.";
-                lab.Font = new System.Drawing.Font("Arial", 12);
-                lab.Size = new System.Drawing.Size(340, 140);
-                progressForm.Controls.Add(lab);
-                progressForm.Show();
-                progressForm.Update();
+                if (!Globals.ThisAddIn.CheckFileRequirements())
+                {
+                    Globals.ThisAddIn.uploadSuccess = false;
+                    System.Windows.Forms.MessageBox.Show("Sorry, total file size too big for slideTracker.");
+                    return;
+                }
+
                 string resp = Globals.ThisAddIn.CreateRemotePresentation();
                 lab.Text = "uploading remote presentation...";
                 progressForm.Update();
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
                 //progressForm.Close();
-                System.Windows.Forms.MessageBox.Show("Done!");
+                System.Windows.Forms.MessageBox.Show("ALL DONE!" + System.Environment.NewLine + 
+                    "Just start presenting as usual. The audience will see the tracking code on your slides.", "Success");
                 displayStopButton = true;
                 this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
                 this.ribbon.InvalidateControl("StopBroadcast"); //update display
+                this.ribbon.InvalidateControl("PresID");
+                this.ribbon.InvalidateControl("PresIDLink");
+                this.ribbon.InvalidateControl("PresIDGroup");
+                this.ribbon.InvalidateControl("NumViewers");
             }
             catch
             {
@@ -167,6 +182,9 @@ namespace SlideTracker
             displayStopButton = false;
             this.ribbon.InvalidateControl("BroadcastButton");
             this.ribbon.InvalidateControl("StopBroadcast");
+            this.ribbon.InvalidateControl("PresIDGroup");
+            Globals.ThisAddIn.uploadSuccess = false;
+            Globals.ThisAddIn.maxClients = 0;
         }
 
         public void OnAllowDownload(Office.IRibbonControl control, bool isClicked)
@@ -239,6 +257,53 @@ namespace SlideTracker
                 Globals.ThisAddIn.top = offset;
 
                 return "TR";
+            }
+        }
+
+        public string GetPresLink(Office.IRibbonControl control)
+        {
+            if (Globals.ThisAddIn.uploadSuccess)
+            {
+                int pos = Globals.ThisAddIn.postURL.IndexOf("/api");
+                return System.Environment.NewLine + Globals.ThisAddIn.postURL.Substring(0, pos) + "/track/" + Globals.ThisAddIn.pres_ID;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        public void FollowPresLink(Office.IRibbonControl control)
+        {
+            if (Globals.ThisAddIn.uploadSuccess)
+            {
+                int pos = Globals.ThisAddIn.postURL.IndexOf("/api");
+                string link = Globals.ThisAddIn.postURL.Substring(0, pos) + "/track/" + Globals.ThisAddIn.pres_ID;
+                System.Diagnostics.Process.Start(link);
+            }
+        }
+
+        public string GetPresID(Office.IRibbonControl control)
+        {
+            if (Globals.ThisAddIn.uploadSuccess)
+            {
+                return "Presentation ID:  " + Globals.ThisAddIn.pres_ID;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        public string GetNumViewers(Office.IRibbonControl control)
+        {
+            if (Globals.ThisAddIn.maxClients > 0 && Globals.ThisAddIn.uploadSuccess)
+            {
+                return "Maximum viewers: " + Globals.ThisAddIn.maxClients;
+            }
+            else
+            {
+                return "";
             }
         }
 

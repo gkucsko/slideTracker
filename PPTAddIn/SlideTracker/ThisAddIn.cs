@@ -17,23 +17,24 @@ namespace SlideTracker
         public string SlideDir = @"C:\"; //won't get used. assigned a random temp directory upon exporting
         public string fmt = "png"; //export the slides to
         //private string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
-        private string postURL = "http://54.208.192.158/api/v1/presentations"; //dev server
+        public string postURL = "http://54.208.192.158/api/v1/presentations"; //dev server
         private string userAgent = ""; //not really used. could be anything. for future development
         public string privateHash = "foobar"; //will get set when creating remote pres
-        private string pres_ID = "123"; //will be overwritten by info from server
+        public string pres_ID = "123"; //will be overwritten by info from server
         public string userName = ""; //will be taken from mac address of computer
         private string[] textBoxIds; //ids for text boxes with ip address
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
         public bool allowDownload = false;// allow others to download pdf from website
-        public bool debug = false; //write stuff to log file
+        public bool debug = true; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 85; // width in points of text box
         public float height = 30; // height in points of text box
         public bool uploadSuccess = false; // set to true upon success in upload
         private bool failedDuringPresentation = false; //will be set to true if things fail during pres
-        private string logFile = @""; //file to write log notes
+        private string logFile = @""; //file to write log notes 
+        public int maxClients = 0; //max number of viewers ever
 
         #region Slide Show Functions
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
@@ -85,11 +86,15 @@ namespace SlideTracker
             if (this.textBoxIds.Length >0)
             {
                 DeleteBannerFromAll();
-                if (this.failedDuringPresentation)
-                {
-                    System.Windows.Forms.MessageBox.Show("Contact with server lost during presentation.");
-                }
                 if (this.debug) { logWrite("ending Show "); }
+            }
+            if (this.maxClients>=0 && this.uploadSuccess)
+            {
+                SlideTrackerRibbon.ribbon1.InvalidateControl("NumViewers");
+            }
+            if (this.failedDuringPresentation)
+            {
+                System.Windows.Forms.MessageBox.Show("Contact with server lost during presentation.");
             }
         }
 
@@ -137,6 +142,32 @@ namespace SlideTracker
             return fullResponse;
         }
 
+        public bool CheckFileRequirements()
+        {
+            bool allGood = true;
+            string[] files = System.IO.Directory.GetFiles(this.SlideDir, "*." + this.fmt);
+            Int64 totalSize = 0;
+            for (int i = 0; i < files.Length; i++)
+            {
+                FileInfo fi = new FileInfo(files[i]);
+                totalSize += fi.Length;
+                if (fi.Length > 2000000)
+                {
+                    allGood = false;
+                    break;
+                }
+            }
+            if (totalSize > 20000000) { allGood = false; }
+            string[] pdfFiles = System.IO.Directory.GetFiles(this.SlideDir, "*.pdf");
+            if (pdfFiles.Length > 1) { allGood = false; }
+            if (pdfFiles.Length > 0)
+            {
+                FileInfo pdfInfo = new FileInfo(pdfFiles[0]);
+                if (pdfInfo.Length > 20000000) { allGood = false; }
+            }
+            return allGood;
+        }
+        
         public string UploadRemotePresentation()
         {
             //upload all slides and, if allowed pdf presentation to server
@@ -227,12 +258,13 @@ namespace SlideTracker
             postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
             postParameters.Add("cur_slide", "" + slideNumber);
             postParameters.Add("active", "true");
+            string fullResponse;
             try
             {
                 HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID,
                 this.userAgent, postParameters, "PUT");
                 StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
-                string fullResponse = responseReader.ReadToEnd();
+                fullResponse = responseReader.ReadToEnd();
                 if (this.debug) { logWrite(fullResponse); }
                 webResponse.Close();
             }
@@ -241,8 +273,15 @@ namespace SlideTracker
                 this.uploadSuccess = false; //should prevent this function from ever getting called again
                 this.failedDuringPresentation = true;
                 DeleteBannerFromAll();
+                if (this.debug) { logWrite("Problems on slide " + slideNumber); }
                 return;
             }
+            //do this statistics here. failing this shouldn't ruin the presentation tracking
+            int temp;
+            bool parsed = Int32.TryParse(GetInfoFromJson(fullResponse, "clients"), out temp);
+            if (parsed && temp > this.maxClients) { this.maxClients = temp; }
+            if (this.debug) { logWrite("Current Slide = " + slideNumber + "  number of viewers = " + temp); }
+            
         }
 
         public void DeleteRemotePresentation()
@@ -373,7 +412,7 @@ namespace SlideTracker
 
         }
 
-          protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
+        protected override Microsoft.Office.Core.IRibbonExtensibility CreateRibbonExtensibilityObject()
           {
               return new SlideTrackerRibbon();
           }

@@ -37,6 +37,7 @@ namespace SlideTracker
             request.UserAgent = userAgent;
             request.CookieContainer = new CookieContainer();
             request.ContentLength = formData.Length;
+            request.Timeout = 1000;
 
             // You could add authentication here as well if needed:
             // request.PreAuthenticate = true;

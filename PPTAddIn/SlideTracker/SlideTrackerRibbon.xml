@@ -31,6 +31,11 @@
           <button id="StopBroadcast" label="Stop Broadcasting" showLabel="true" size="large" imageMso="PreviewClose"
                screentip="stop broadcasting" onAction="OnStopBroadcast" getVisible="IsStopButtonVisible"/>
         </group>
+        <group id="PresIDGroup" getVisible="IsStopButtonVisible">
+          <labelControl id="PresID" getLabel="GetPresId"/>
+          <button id="PresIDLink" onAction="FollowPresLink" getLabel="GetPresLink" supertip="Direct audience to this URL" imageMso="HyperlinkEdit"/>
+          <labelControl id="NumViewers" getLabel="GetNumViewers" visible="true"/>
+        </group>
       </tab>
     </tabs>
   </ribbon>
