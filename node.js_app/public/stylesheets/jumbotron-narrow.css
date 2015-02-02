@@ -98,8 +98,10 @@ margin: 10px 0 10px 10px;
 	padding-top: 20px;
 	width: 100%;
 	text-align: center;
-	display: inline-block;
 	position: relative;
+	max-width: 600px;
+	margin: 0 auto;
+	display: block;
 }
 
 .custom_header {
