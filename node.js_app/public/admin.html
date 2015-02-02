@@ -94,7 +94,7 @@
 								<td><a href="/track/{{ PresRec.pres_ID }}">{{ PresRec.pres_ID }}</a></td>
 								<td>{{ PresRec.creator }}</td>
 								<td>{{ PresRec.n_slides }}</td>
-								<td>{{ PresRec.file_size/1000000+' MB' }}</td>
+								<td>{{ Math.round(PresRec.file_size/1000000*10)/10+' MB' }}</td>
 								<td>{{ PresRec.clients }}</td>
 								<td>{{ PresRec.active }}</td>
 								<td>{{ PresRec.download }}</td>

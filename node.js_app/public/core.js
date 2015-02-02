@@ -2,7 +2,10 @@ var slideTrack = angular.module('slideTrack', []);
 
 //get requested presentation ID
 var url = $(location).attr('href').split('/').splice(0, 5).join('/');
-var socket = io('http://localhost', { query: "pres_ID="+url.substr(url.lastIndexOf('/') + 1) });
+var pathArray = $(location).attr('href').split('/');
+var protocol = pathArray[0];
+var host = pathArray[2];
+var socket = io(protocol + '//' + host, { query: "pres_ID="+url.substr(url.lastIndexOf('/') + 1) });
 
 slideTrack.controller('mainController', function ($scope, $http) {
 

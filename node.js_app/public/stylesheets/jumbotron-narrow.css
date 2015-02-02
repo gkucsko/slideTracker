@@ -210,6 +210,10 @@ margin: 10px 0 10px 10px;
 	background: none;
 }
 
+#fs-tracking-box #fs-exit:hover {
+	color: #333;
+}
+
 #fs-tracking-box #fs-next-slide{
 	position: absolute;
 	right: 10px;

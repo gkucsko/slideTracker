@@ -37,9 +37,6 @@ var CronJob = cron.CronJob;
 // delete directories and files
 var rimraf = require('rimraf');
 
-// parse requester url
-var url = require('url');
-
 // static key used to avoid bots posting
 var apiKey = 'N3sN7AiWTFK9XNwSCn7um35joV6OFslL';
 
