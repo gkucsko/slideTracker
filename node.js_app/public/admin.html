@@ -1,0 +1,195 @@
+<!-- index.html -->
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="dbInfo">
+	<head>
+		<!-- META -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- Optimize mobile viewport -->
+
+		<title>Database Information</title>
+
+		<!-- SCROLLS -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/stylesheets/admin.css">
+
+	</head>
+
+	<body ng-controller='mainController'>
+
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="/">slideTracker</a>
+				</div>
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<a href="#">Sign In</a>
+						</li>
+					</ul>
+					<form class="navbar-form navbar-right">
+						<input class="form-control" placeholder="Search..." type="text">
+					</form>
+				</div>
+			</div>
+		</nav>
+
+		<div class="container-fluid">
+			<div class="col-sm-3 col-md-2 sidebar">
+				<ul class="nav nav-sidebar">
+					<li class="active">
+						<a href="/admin">Overview <span class="sr-only">(current)</span></a>
+					</li>
+					<li>
+						<a href="/admin/analytics">Analytics</a>
+					</li>
+				</ul>
+			</div>
+			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				<h1 class="page-header">Dashboard</h1>
+				<div class="row placeholders">
+					<div class="col-xs-6 col-sm-3">
+						<h3>Current</h3>
+						<h4>Total: {{ nPres }}</h4>
+						<h4>Active: {{ nPresAct }}</h4>
+						<h4>Clients: {{ nClients }}</h4>
+					</div>
+					<div class="col-xs-6 col-sm-3 placeholder">
+						<img id="pie-chart" class="img-responsive">
+						<h4>Label</h4>
+						<span class="text-muted">Something else</span>
+					</div>
+					<div class="col-xs-6 col-sm-3 placeholder">
+						<img data-holder-rendered="true" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxkZWZzLz48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzM5REJBQyIvPjxnPjx0ZXh0IHg9IjczLjg3NSIgeT0iMTAwIiBzdHlsZT0iZmlsbDojMUUyOTJDO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L2c+PC9zdmc+" data-src="holder.js/200x200/auto/vine" class="img-responsive" alt="200x200">
+						<h4>Label</h4>
+						<span class="text-muted">Something else</span>
+					</div>
+					<div class="col-xs-6 col-sm-3 placeholder">
+						<img data-holder-rendered="true" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxkZWZzLz48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzBEOEZEQiIvPjxnPjx0ZXh0IHg9IjczLjg3NSIgeT0iMTAwIiBzdHlsZT0iZmlsbDojRkZGRkZGO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L2c+PC9zdmc+" data-src="holder.js/200x200/auto/sky" class="img-responsive" alt="200x200">
+						<h4>Label</h4>
+						<span class="text-muted">Something else</span>
+					</div>
+				</div>
+
+				<h2 class="sub-header">Full Records</h2>
+				<div class="table-responsive">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>pres_ID</th>
+								<th>creator</th>
+								<th>n_slides</th>
+								<th>cur_slide</th>
+								<th>file_size</th>
+								<th>clients</th>
+								<th>active</th>
+								<th>download</th>
+								<th><a href="" ng-click="predicate = '-updated'; reverse=!reverse">updated</a></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="PresRec in fullRecord | orderBy:predicate:reverse">
+								<td><a href="/track/{{ PresRec.pres_ID }}">{{ PresRec.pres_ID }}</a></td>
+								<td>{{ PresRec.creator }}</td>
+								<td>{{ PresRec.n_slides }}</td>
+								<td>{{ PresRec.cur_slide }}</td>
+								<td>{{ Math.round(PresRec.file_size/1000000*10)/10+' MB' }}</td>
+								<td>{{ PresRec.clients }}</td>
+								<td>{{ PresRec.active }}</td>
+								<td>{{ PresRec.download }}</td>
+								<td>{{ PresRec.updated | date : "MM/dd/yyyy 'at' h:mma" }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<!-- SPELLS -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+
+		<script>
+			var dbInfo = angular.module('dbInfo', []);
+			dbInfo.controller('mainController', function($scope, $http) {
+				
+				//inject math
+				$scope.Math = window.Math;
+
+				$http.get('/admin/get_db_entries').success(function(data) {
+
+					// count presentations in database
+					$scope.nPres = data.length;
+
+					// count active presentations
+					var nActives = $.grep(data, function(element, index) {
+						return element.active == true;
+					});
+					$scope.nPresAct = nActives.length;
+					
+					// count total number of clients
+					var nClients = $.grep(data, function(element, index) {
+						return element.clients;
+					});
+					var total = 0;
+					$.each(nClients,function() {
+					    total += this.clients;
+					});
+					$scope.nClients = total;
+
+					// save full output
+					$scope.fullRecord = data;
+
+					// standard sort by
+					$scope.predicate = '-updated';
+
+				}).error(function(data) {
+					console.log('Error: ' + data);
+				});
+
+			})
+
+		</script>
+		
+	    <!--Load the AJAX API-->
+	    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	    <script type="text/javascript">
+	
+	      // Load the Visualization API and the piechart package.
+	      google.load('visualization', '1.0', {'packages':['corechart']});
+	
+	      // Set a callback to run when the Google Visualization API is loaded.
+	      google.setOnLoadCallback(drawChart);
+	
+	      // Callback that creates and populates a data table,
+	      // instantiates the pie chart, passes in the data and
+	      // draws it.
+	      function drawChart() {
+	
+	        // Create the data table.
+	        var data = new google.visualization.DataTable();
+	        data.addColumn('string', 'Topping');
+	        data.addColumn('number', 'Slices');
+	        data.addRows([
+	          ['Active', 3],
+	          ['Inactive', 1]
+	        ]);
+	
+	        // Set chart options
+	        var options = {
+	                       'width':300,
+	                       'height':200};
+	
+	        // Instantiate and draw our chart, passing in some options.
+	        var chart = new google.visualization.PieChart(document.getElementById('pie-chart'));
+	        chart.draw(data, options);
+	      }
+	    </script>
+
+
+	</body>
+</html>
+

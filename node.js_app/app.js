@@ -73,7 +73,7 @@ app.use(multer({
 		return filename.replace(/\W+/g, '-').toLowerCase() + Date.now()
 	},
 	limits : {
-		fileSize : 10000000, // max 10 MB
+		fileSize : 20000000, // max 20 MB
 		files : 1
 	}
 }))
@@ -90,10 +90,12 @@ db.once('open', function(callback) {
 });
 
 var presSchema = mongoose.Schema({
-	pres_ID : Number,
+	pres_ID : String,
 	creator : String,
 	n_slides : Number,
 	cur_slide : Number,
+	file_size : Number,
+	clients : Number,
 	active : Boolean,
 	download : Boolean,
 	created : Date,
@@ -122,7 +124,7 @@ new CronJob('00 00 * * *', function(){
 			if (pres[0]) {				
 				for (i = 0; i < pres.length; i++) {
 					
-					console.log('deleted: '+pres[i].pres_ID);
+					//console.log('deleted: '+pres[i].pres_ID);
 					
 					// delete database entry
 					Presentation.find({ 'pres_ID' : pres[i].pres_ID }).remove().exec();
@@ -152,8 +154,11 @@ app.post('/api/v1/presentations', function(req, res) {
 	}
 	var response = {};
 	
-	// generate a random integer 10.000-99.999
-	var pres_ID = Math.floor((Math.random() * 89999) + 10000);
+	// generate 3 random letters and a random integer 10-99
+ 	var pres_ID = "";
+    var possible = "abcdefghijklmnopqrstuvwxyz";
+    for( var i=0; i < 3; i++ ){pres_ID += possible.charAt(Math.floor(Math.random() * possible.length));}
+	pres_ID += Math.floor((Math.random() * 89) + 10);
 	
 	//check if pres_ID already taken
 	Presentation.find({ 'pres_ID' : pres_ID })
@@ -171,6 +176,8 @@ app.post('/api/v1/presentations', function(req, res) {
 		var creator = req.body.creator;
 		var n_slides = req.body.n_slides;
 		var cur_slide = '1';
+		var file_size = '0';
+		var clients = '0';
 		var now = new Date();
 		var created = now.toJSON();
 		var updated = now.toJSON();
@@ -181,6 +188,8 @@ app.post('/api/v1/presentations', function(req, res) {
 			creator : creator,
 			n_slides : n_slides,
 			cur_slide : cur_slide,
+			file_size : file_size,
+			clients : clients,
 			active : false,
 			download : false,
 			created : created,
@@ -342,6 +351,7 @@ app.post('/api/v1/presentations/:pres_ID/slides', function(req, res) {
 	var pres_ID = req.params.pres_ID;
 	var slide_ID = req.body.slide_ID;
 	var old_filename = req.files.slide.name;
+	var filesize = req.files.slide.size;
 	
 	Presentation.find({ 'pres_ID' : req.params.pres_ID })
 	.exec(function(err, pres) {
@@ -361,15 +371,27 @@ app.post('/api/v1/presentations/:pres_ID/slides', function(req, res) {
 			res.status(401).json(err);
 			return;
 		}else{
-		
+			//check if filesize too big
+			if (filesize+r_pres.file_size > 20000000) {
+				var err = 'sorry, total filesize too large';
+				res.status(400).json(err);
+				return;
+			}
 			//check if slide file already exists
 			if (fs.existsSync('./public/files/' + pres_ID + '/Slide' + slide_ID + '.PNG')) {
 				var err = 'sorry, slide already exists';
 				res.status(400).json(err);
 				return;
 			}
-			fs.rename('./uploads/' + old_filename, './public/files/' + pres_ID + '/Slide' + slide_ID + '.PNG');
-			res.status(201).json('upload succeeded!');
+			r_pres.file_size = r_pres.file_size + filesize;
+			r_pres.save(function(err) {
+			if (err) {
+				res.status(400).json(err);
+				return;
+			}
+				fs.rename('./uploads/' + old_filename, './public/files/' + pres_ID + '/Slide' + slide_ID + '.PNG');
+				res.status(201).json('upload succeeded!');
+			});
 		}
 	});
 });
@@ -492,13 +514,21 @@ app.get('/contact', function(req, res) {
 	res.sendfile('./public/contact.html');
 });
 
-app.get('/test/get_db', function(req, res) {
+app.get('/admin/get_db_entries', function(req, res) {
 	Presentation.find().exec(function(err, presentations) {
 		if (err) {
 			return next(err)
 		}
 		res.status(200).json(presentations)
 	})
+});
+
+app.get('/admin/analytics', function(req, res) {
+	res.sendfile('./public/analytics.html');
+});
+
+app.get('/admin', function(req, res) {
+	res.sendfile('./public/admin.html');
 });
 
 // app.get('/test/s3', function(req, res) {
@@ -522,14 +552,34 @@ app.get('/robots.txt', function(req, res) {
 
 
 app.get('*', function(req, res) {
-	res.sendfile('./public/index.html'); //__dirname ?
+	res.sendfile('./public/index.html');
 });
 
 io.on('connection', function(socket) {
-	console.log('a user connected');
-	socket.on('disconnect', function() {
-		console.log('user disconnected');
-	});
+	// user connected
+	if (socket.handshake.query.pres_ID){
+		Presentation.find({ 'pres_ID' : socket.handshake.query.pres_ID })
+		.exec(function(err, pres) {
+			if (err) {return;}
+			if (!pres[0]) {return;}
+			var r_pres = pres[0];					
+			r_pres.clients = r_pres.clients + 1;
+			r_pres.save(function(err) {if (err) {return;}});
+		});
+	}
+socket.on('disconnect', function() {
+	// user disconnected
+	if (socket.handshake.query.pres_ID){
+		Presentation.find({ 'pres_ID' : socket.handshake.query.pres_ID })
+		.exec(function(err, pres) {
+			if (err) {return;}
+			if (!pres[0]) {return;}
+			var r_pres = pres[0];					
+			r_pres.clients = r_pres.clients - 1;
+			r_pres.save(function(err) {if (err) {return;}});
+		});
+	}
+});
 });
 
 http.listen(app.get('port'), function() {

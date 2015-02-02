@@ -1,5 +1,11 @@
 var slideTrack = angular.module('slideTrack', []);
-var socket = io();
+
+//get requested presentation ID
+var url = $(location).attr('href').split('/').splice(0, 5).join('/');
+var pathArray = $(location).attr('href').split('/');
+var protocol = pathArray[0];
+var host = pathArray[2];
+var socket = io(protocol + '//' + host, { query: "pres_ID="+url.substr(url.lastIndexOf('/') + 1) });
 
 slideTrack.controller('mainController', function ($scope, $http) {
 
@@ -13,7 +19,6 @@ slideTrack.controller('mainController', function ($scope, $http) {
 	$scope.bFs = false;
 
 	//get requested presentation ID
-	var url = $(location).attr('href').split('/').splice(0, 5).join('/');
 	$scope.pres_ID = url.substr(url.lastIndexOf('/') + 1);
 
 	$scope.track = function() {
@@ -41,6 +46,7 @@ slideTrack.controller('mainController', function ($scope, $http) {
 					$('#prev-slide').removeAttr('disabled', 'disabled');
 					$('#fs-next-slide').removeAttr('disabled', 'disabled');
 					$('#fs-prev-slide').removeAttr('disabled', 'disabled');
+					$('#fs-btn').removeAttr('disabled', 'disabled');
 					if (parseInt($scope.cur_slide) >= $scope.presentation.n_slides) {
 						$('#next-slide').attr('disabled', 'disabled');
 						$('#fs-next-slide').attr('disabled', 'disabled');
@@ -74,9 +80,10 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		$scope.presentation.n_slides = 0;
 		$scope.slide_alt_text = 'presentation finished';
 		$('#tracking-box .slide-box').css('display','none');
-		$('#download-pres').css('display','none');
-		$('#fs-btn').css('display','none');	
+		$('#download-pres').css('display','none');	
+		$('#fs-btn').attr('disabled', 'disabled');
 		$scope.slide_src = '';
+		$scope.$apply();
 		$scope.fs_exit();
 	};
 
@@ -142,6 +149,8 @@ slideTrack.controller('mainController', function ($scope, $http) {
 					$('#tracking-box .slide-box').css('display','inline-block');
 				}
 			}
+			$("#fs-tracking-box .fs-btn").css('display','');
+			setTimeout('$("#fs-tracking-box .fs-btn").fadeOut();', 2000);
 		}).error(function(data) {
 			console.log('Error: ' + data);
 		});
@@ -173,11 +182,13 @@ slideTrack.controller('mainController', function ($scope, $http) {
 						$scope.slide_src = '/files/' + $scope.pres_ID + '/Slide' + $scope.cur_slide + '.PNG';
 					}
 					$('#next-slide').removeAttr('disabled', 'disabled');
-					$('#fs-next-slide').removeAttr('disabled', 'disabled');
+					$('#fs-next-slide').removeAttr('disabled', 'disabled');					
 					$scope.slide_alt_text = '';
 					$('#tracking-box .slide-box').css('display','inline-block');
 				}
 			}
+			$("#fs-tracking-box .fs-btn").css('display','');
+			setTimeout('$("#fs-tracking-box .fs-btn").fadeOut();', 2000);
 		}).error(function(data) {
 			console.log('Error: ' + data);
 		});
@@ -185,14 +196,39 @@ slideTrack.controller('mainController', function ($scope, $http) {
 	
 	// go to fullscreen
 	$scope.fullscreen = function() {
+		
+		$('#fs-tracking-box .fs-btn').hide();		
 		$('#fs-tracking-box').css('display', 'block');
 		$scope.bFs = true;
+		
+		$scope.fs_position();
+
+		$('#fs-tracking-box .fs-btn').css('display','');
+		setTimeout('$("#fs-tracking-box .fs-btn").fadeOut();', 2000);
+		
 	};
 
 	// exit fullscreen
 	$scope.fs_exit = function() {
 		$('#fs-tracking-box').css('display', 'none');
 		$scope.bFs = false;
+	};
+	
+	// position fullscreen buttons
+	$scope.fs_position = function() {
+		var fsImg = document.getElementById('fs-img'); 
+		var fsImgW = fsImg.clientWidth;
+		var fsImgH = fsImg.clientHeight;
+		var fsWindW = $( window ).width();
+		var fsWindH = $( window ).height();
+		var bTop = ((fsWindH-fsImgH)/2+10);
+		var bRight = ((fsWindW-fsImgW)/2+10);
+		var bLeft = ((fsWindW-fsImgW)/2+10);
+		$('#fs-btn-track').css('top',bTop+'px');
+		$('#fs-prev-slide').css('left',bLeft+'px');
+		$('#fs-next-slide').css('right',bRight+'px');
+		$('#fs-exit').css('top',bTop+'px');
+		$('#fs-exit').css('right',bRight+'px');
 	};
 	
 	// track presentation
@@ -217,6 +253,27 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		}
 	});
 
+	//if in fullscreen mode adjust button position when resizing window
+	$( window ).resize(function() {
+		if($scope.bFs){
+			$scope.fs_position();
+		}
+	});
+	
+	//make keys work for navigation
+	$('body').keydown(function(e) {
+		if(e.keyCode == 37) { // left
+			if($scope.bFs){
+				$('#fs-prev-slide').click();
+			}
+		}
+		else if(e.keyCode == 39) { // right
+			if($scope.bFs){
+				$('#fs-next-slide').click();
+			}
+		}
+	});
+		
 	// start tracking on initial load
 	$scope.current();
 

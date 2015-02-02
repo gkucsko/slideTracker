@@ -9,18 +9,11 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<!-- Optimize mobile viewport -->
 
-		<title>SlideTracker</title>
+		<title>Tracking Presentation</title>
 
 		<!-- SCROLLS -->
-		<!-- load bootstrap -->
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/stylesheets/jumbotron-narrow.css">
-
-		<!-- SPELLS -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
-		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
-		<script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
-    	<script src="/core.js"></script>
 
 	</head>
 
@@ -39,27 +32,31 @@
 								<a class="prod-hide" href="/api-documentation">API</a>
 							</li>
 							<li>
-								<a class="prod-hide" href="/test/get_db">View DB</a>
+								<a class="prod-hide" href="/admin">Admin</a>
 							</li>
 						</ul>
 					</nav>
-					<a class="img-link" href="/"><h3 class="text-muted">SlideTracker</h3></a>
+					<a class="img-link" href="/"><h3 class="text-muted">slideTracker</h3></a>
 				</div>
 				
 				<div id="tracking-box">
 					<h4><strong>{{cur_slide}}/{{presentation.n_slides}}</strong></h4>
 					<div class='slide-nav-btns'>
-						<button type="submit" id="prev-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="previous()"><</button>
+						<button type="submit" id="prev-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="previous()"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
 						<button type="submit" id='btn-track' class="btn btn-primary btn-med" disabled="disabled" ng-click="track()">done</button>
-						<button type="submit" id="next-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="next()">></button>
+						<button type="submit" id="next-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="next()"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
 					</div>
-					<span class="slide-box">
+					<div class="slide-box">
 						<img alt="" ng-src="{{slide_src}}"/>									
-					</span>
-					<button type="submit" id="fs-btn" class="btn btn-primary btn-med pull-right margin-10-0" ng-click="fullscreen()">Fullscreen</button>
-					<a href="#" type="button" id="download-pres" class="btn btn-primary btn-med pull-left margin-10-0">
-						<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Download
-					</a>
+					</div>
+					<div>
+						<button type="submit" disabled="disabled" id="fs-btn" class="btn btn-primary btn-med pull-right margin-10-0" ng-click="fullscreen()">
+							<span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span> Fullscreen
+						</button>
+						<a href="#" type="button" id="download-pres" class="btn btn-primary btn-med pull-left margin-10-0">
+							<span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download
+						</a>
+					</div>
 					<div class="alt-text">{{slide_alt_text}}</div>
 				</div>
 				<div id="fs-tracking-box">
@@ -67,8 +64,8 @@
 						<button type="submit" id="fs-prev-slide" class="fs-btn" ng-click="previous()"><</button>
 						<button type="submit" id='fs-btn-track' class="fs-btn" ng-click="track()">done</button>
 						<button type="submit" id="fs-next-slide" class="fs-btn" ng-click="next()">></button>
-						<button type="submit" id="fs-exit" class="fs-btn" ng-click="fs_exit()">x</button>
-						<img alt="" ng-src="{{slide_src}}"/>										
+						<button type="submit" id="fs-exit" class="fs-btn" ng-click="fs_exit()"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></button>
+						<img id="fs-img" alt="" ng-src="{{slide_src}}"/>										
 					</span>
 				</div>
 				<div id='pres-not-found'>
@@ -90,18 +87,24 @@
 			</footer>
 		</div>
 
+		<!-- SPELLS -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+		<script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
+    	<script src="/core.js"></script>
+
 		<script>
 			$("#submit-code").click(function() {
 				var code = $("#fp-code-input input").val();
 				if (code) {window.location.href = "/track/"+code;} else {$("#fp-code-input input").focus()}
 			});
-			
+						
 			// make fullscreen controls vanish on 2s inactivity
 			var t_controls = null;
 			var isHovered = null;
 			$("#fs-tracking-box").mousemove(function() {
 				clearTimeout(t_controls);
-				$("#fs-tracking-box .fs-btn").removeAttr('style');
+				$("#fs-tracking-box .fs-btn").css('display','');
 				t_controls = setTimeout('$("#fs-tracking-box .fs-btn").fadeOut();', 2000);
 			}).mouseleave(function() {
 				clearTimeout(t_controls);
@@ -111,15 +114,12 @@
 	
 		<!-- google analytics code -->
 		<script>
-		
-		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		  ga('create', 'UA-58643576-1', 'auto');
-		  ga('send', 'pageview');
-		
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');	
+			ga('create', 'UA-59197798-1', 'auto');
+			ga('send', 'pageview');	
 		</script>
 		<!-- end google analytics code -->
 
