@@ -16,8 +16,8 @@ namespace SlideTracker
     {
         public string SlideDir = @"C:\"; //won't get used. assigned a random temp directory upon exporting
         public string fmt = "png"; //export the slides to
-        //private string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
-        public string postURL = "http://54.208.192.158/api/v1/presentations"; //dev server
+        public string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
+        //public string postURL = "http://54.208.192.158/api/v1/presentations"; //dev server
         private string userAgent = ""; //not really used. could be anything. for future development
         public string privateHash = "foobar"; //will get set when creating remote pres
         public string pres_ID = "123"; //will be overwritten by info from server
@@ -26,7 +26,7 @@ namespace SlideTracker
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
         public bool allowDownload = false;// allow others to download pdf from website
-        public bool debug = true; //write stuff to log file
+        public bool debug = false; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 85; // width in points of text box

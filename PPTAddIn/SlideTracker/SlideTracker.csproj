@@ -29,10 +29,10 @@
     <AssemblyName>SlideTracker</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <DefineConstants>VSTO40</DefineConstants>
-    <IsWebBootstrapper>False</IsWebBootstrapper>
+    <IsWebBootstrapper>True</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>C:\tmp\publish\</PublishUrl>
-    <InstallUrl />
+    <PublishUrl>C:\tmp\publish2\</PublishUrl>
+    <InstallUrl>http://54.208.192.158:/home/mikey/</InstallUrl>
     <TargetCulture>en</TargetCulture>
     <ApplicationVersion>1.0.0.1</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
