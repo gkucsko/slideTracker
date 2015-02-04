@@ -50,7 +50,7 @@ namespace SlideTracker
 
         #endregion
 
-        #region Ribbon Callbacks
+        
         //Create callback methods here. For more information about adding callback methods, visit http://go.microsoft.com/fwlink/?LinkID=271226
 
         public void Ribbon_Load(Office.IRibbonUI ribbonUI)
@@ -58,6 +58,8 @@ namespace SlideTracker
             this.ribbon = ribbonUI;
             ribbon1 = ribbonUI;
         }
+
+        #region visibility helpers
 
         public bool IsStopButtonVisible(Office.IRibbonControl control)
         {
@@ -105,7 +107,9 @@ namespace SlideTracker
             this.ribbon.InvalidateControl("HideOptionsButton");
             return ret;
         }
-        
+        #endregion
+        #region Ribbon Callbacks
+
         public void OnExportButton(Office.IRibbonControl control)
         {
             Globals.ThisAddIn.uploadSuccess = true;
@@ -119,8 +123,9 @@ namespace SlideTracker
             progressForm.Controls.Add(lab);
             progressForm.Show();
             progressForm.Update();
-
+            Globals.ThisAddIn.MakeLUT();
             Globals.ThisAddIn.Application.ActivePresentation.Export(Globals.ThisAddIn.SlideDir, Globals.ThisAddIn.fmt);
+            Globals.ThisAddIn.DeleteHiddenSlides();
             if (Globals.ThisAddIn.allowDownload)
             {
                 Globals.ThisAddIn.Application.ActivePresentation.ExportAsFixedFormat(
@@ -140,9 +145,23 @@ namespace SlideTracker
                 lab.Text = "uploading remote presentation...";
                 progressForm.Update();
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
-                //progressForm.Close();
+                progressForm.Close();
+
+                /*System.Windows.Forms.LinkLabel linkLabel = new System.Windows.Forms.LinkLabel();
+                linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(LinkClicked);
+                linkLabel.Text = "click here to go to online presentation";
+                System.Windows.Forms.Form successForm = new System.Windows.Forms.Form();
+                System.Windows.Forms.Label successLabel = new System.Windows.Forms.Label();
+                successForm.Text = "Success";
+                successForm.Size = new System.Drawing.Size(350, 150);
+                successLabel.Text = "ALL DONE!" + System.Environment.NewLine +
+                    "Just start presenting as usual. The audience will see the tracking code on your slides.";
+                successForm.Controls.Add(successLabel);
+                successForm.Controls.Add(linkLabel);
+                successForm.Show();*/
+
                 System.Windows.Forms.MessageBox.Show("ALL DONE!" + System.Environment.NewLine + 
-                    "Just start presenting as usual. The audience will see the tracking code on your slides.", "Success");
+                    "Just start presenting as usual. The audience will see the tracking code on your slides." , "Success");
                 displayStopButton = true;
                 this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
                 this.ribbon.InvalidateControl("StopBroadcast"); //update display
@@ -264,8 +283,7 @@ namespace SlideTracker
         {
             if (Globals.ThisAddIn.uploadSuccess)
             {
-                int pos = Globals.ThisAddIn.postURL.IndexOf("/api");
-                return System.Environment.NewLine + Globals.ThisAddIn.postURL.Substring(0, pos) + "/track/" + Globals.ThisAddIn.pres_ID;
+                return System.Environment.NewLine + Globals.ThisAddIn.GetLinkURL();
             }
             else
             {
@@ -277,9 +295,9 @@ namespace SlideTracker
         {
             if (Globals.ThisAddIn.uploadSuccess)
             {
-                int pos = Globals.ThisAddIn.postURL.IndexOf("/api");
-                string link = Globals.ThisAddIn.postURL.Substring(0, pos) + "/track/" + Globals.ThisAddIn.pres_ID;
-                System.Diagnostics.Process.Start(link);
+                //int pos = Globals.ThisAddIn.postURL.IndexOf("/api");
+                //string link = Globals.ThisAddIn.postURL.Substring(0, pos) + "/track/" + Globals.ThisAddIn.pres_ID;
+                System.Diagnostics.Process.Start(Globals.ThisAddIn.GetLinkURL());
             }
         }
 
@@ -306,6 +324,13 @@ namespace SlideTracker
                 return "";
             }
         }
+
+            private void LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+            {
+                // Specify that the link was visited. 
+                System.Diagnostics.Process.Start(Globals.ThisAddIn.GetLinkURL());
+            }
+
 
         #endregion
 
