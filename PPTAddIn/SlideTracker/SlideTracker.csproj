@@ -29,10 +29,10 @@
     <AssemblyName>SlideTracker</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <DefineConstants>VSTO40</DefineConstants>
-    <IsWebBootstrapper>True</IsWebBootstrapper>
+    <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>C:\tmp\publish2\</PublishUrl>
-    <InstallUrl>http://54.208.192.158:/home/mikey/</InstallUrl>
+    <PublishUrl>C:\Users\Gilad2\Desktop\G\</PublishUrl>
+    <InstallUrl />
     <TargetCulture>en</TargetCulture>
     <ApplicationVersion>1.0.0.1</ApplicationVersion>
     <AutoIncrementApplicationRevision>false</AutoIncrementApplicationRevision>
@@ -214,7 +214,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="SlideTrackerRibbon.xml" />
+    <EmbeddedResource Include="SlideTrackerRibbon.xml">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

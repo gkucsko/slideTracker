@@ -56,7 +56,7 @@ namespace SlideTracker
         public void Ribbon_Load(Office.IRibbonUI ribbonUI)
         {
             this.ribbon = ribbonUI;
-            ribbon1 = ribbonUI;
+            ribbon1 = ribbonUI; // to expose this to globals.ribbons
         }
 
         #region visibility helpers
@@ -160,8 +160,6 @@ namespace SlideTracker
                 successForm.Controls.Add(linkLabel);
                 successForm.Show();*/
 
-                System.Windows.Forms.MessageBox.Show("ALL DONE!" + System.Environment.NewLine + 
-                    "Just start presenting as usual. The audience will see the tracking code on your slides." , "Success");
                 displayStopButton = true;
                 this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
                 this.ribbon.InvalidateControl("StopBroadcast"); //update display
@@ -169,6 +167,11 @@ namespace SlideTracker
                 this.ribbon.InvalidateControl("PresIDLink");
                 this.ribbon.InvalidateControl("PresIDGroup");
                 this.ribbon.InvalidateControl("NumViewers");
+
+                Globals.ThisAddIn.broadcastPresentationName = Globals.ThisAddIn.Application.ActivePresentation.Name;
+                System.Windows.Forms.MessageBox.Show("ALL DONE!" + System.Environment.NewLine +
+                    "Just start presenting as usual. The audience will see the tracking code on your slides.",
+                    "Success: " + Globals.ThisAddIn.broadcastPresentationName);
             }
             catch
             {
@@ -199,6 +202,7 @@ namespace SlideTracker
                 fi.Delete();
             }
             displayStopButton = false;
+            Globals.ThisAddIn.broadcastPresentationName = null;
             this.ribbon.InvalidateControl("BroadcastButton");
             this.ribbon.InvalidateControl("StopBroadcast");
             this.ribbon.InvalidateControl("PresIDGroup");
@@ -305,7 +309,8 @@ namespace SlideTracker
         {
             if (Globals.ThisAddIn.uploadSuccess)
             {
-                return "Presentation ID:  " + Globals.ThisAddIn.pres_ID;
+                return "Presentation ID:  " + Globals.ThisAddIn.pres_ID + 
+                    System.Environment.NewLine + "   Presentation: " + Globals.ThisAddIn.broadcastPresentationName;
             }
             else
             {
@@ -325,11 +330,6 @@ namespace SlideTracker
             }
         }
 
-            private void LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
-            {
-                // Specify that the link was visited. 
-                System.Diagnostics.Process.Start(Globals.ThisAddIn.GetLinkURL());
-            }
 
 
         #endregion
