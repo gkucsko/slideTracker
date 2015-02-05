@@ -260,16 +260,25 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		}
 	});
 	
-	//make keys work for navigation
+	//make keys work for navigation and esc for exit fs
 	$('body').keydown(function(e) {
 		if(e.keyCode == 37) { // left
 			if($scope.bFs){
 				$('#fs-prev-slide').click();
+			}else{
+				$('#prev-slide').click();
 			}
 		}
 		else if(e.keyCode == 39) { // right
 			if($scope.bFs){
 				$('#fs-next-slide').click();
+			}else{
+				$('#next-slide').click();
+			}
+		}
+		else if(e.keyCode == 27) { // esc
+			if($scope.bFs){
+				$('#fs-exit').click();
 			}
 		}
 	});
