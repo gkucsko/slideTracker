@@ -2,6 +2,10 @@
  	/*display: none!important;*/
  }
 
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+    display: none !important;
+}
+
 html, body {
     height: 100%;
 }
@@ -104,12 +108,20 @@ margin: 10px 0 10px 10px;
 	display: block;
 }
 
-.custom_header {
+.custom-header {
 	max-width: 620px; 
 	padding-bottom: 20px; 
 	margin: auto;
 	text-align: center;
 }
+
+
+.custom-header h3{
+	color: #AAA;
+	font-size: 24px;
+	font-weight: bold;
+}
+
 
 .container .jumbotron {
 	padding: 30px;
@@ -132,7 +144,6 @@ margin: 10px 0 10px 10px;
 	left: 0;
 	top: 0;
 	background-color: #333;
-	
 	display: none;
 }
 
@@ -175,6 +186,10 @@ margin: 10px 0 10px 10px;
 
 #tracking-box #btn-track {
 	width: 100px;
+}
+
+#fp-download-btn {
+	margin-top: 31px;
 }
 
 #fs-tracking-box #fs-btn-track {
@@ -291,7 +306,7 @@ a.img-link, a.img-link:hover, a.img-link:active {
 }
 
 /* Medium Devices, Desktops */
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
 	.github-ribbon {
 		display: none;
 	}
@@ -347,6 +362,7 @@ content: "Example";
   border-top: 1px solid #e5e5e5;
   margin-top: -80px;
 }
+
 
 /* Customize container */
 @media (min-width: 768px) {
