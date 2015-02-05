@@ -32,7 +32,7 @@
 								<a class="prod-hide" href="/api-documentation">API</a>
 							</li>
 							<li>
-								<a class="prod-hide" href="/admin">Admin</a>
+								<a class="prod-hide" href="/admin/overview">Admin</a>
 							</li>
 						</ul>
 					</nav>
@@ -40,14 +40,14 @@
 				</div>
 				
 				<div id="tracking-box">
-					<h4><strong>{{cur_slide}}/{{presentation.n_slides}}</strong></h4>
+					<h4 ng-cloak><strong>{{cur_slide}}/{{presentation.n_slides}}</strong></h4>
 					<div class='slide-nav-btns'>
 						<button type="submit" id="prev-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="previous()"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
 						<button type="submit" id='btn-track' class="btn btn-primary btn-med" disabled="disabled" ng-click="track()">done</button>
 						<button type="submit" id="next-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="next()"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
 					</div>
 					<div class="slide-box">
-						<img alt="" ng-src="{{slide_src}}"/>									
+						<img ng-cloak alt="" ng-src="{{slide_src}}"/>									
 					</div>
 					<div>
 						<button type="submit" disabled="disabled" id="fs-btn" class="btn btn-primary btn-med pull-right margin-10-0" ng-click="fullscreen()">
@@ -57,7 +57,7 @@
 							<span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span> Download
 						</a>
 					</div>
-					<div class="alt-text">{{slide_alt_text}}</div>
+					<div ng-cloak class="alt-text">{{slide_alt_text}}</div>
 				</div>
 				<div id="fs-tracking-box">
 					<span class="slide-box">
@@ -65,7 +65,7 @@
 						<button type="submit" id='fs-btn-track' class="fs-btn" ng-click="track()">done</button>
 						<button type="submit" id="fs-next-slide" class="fs-btn" ng-click="next()">></button>
 						<button type="submit" id="fs-exit" class="fs-btn" ng-click="fs_exit()"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></button>
-						<img id="fs-img" alt="" ng-src="{{slide_src}}"/>										
+						<img ng-cloak id="fs-img" alt="" ng-src="{{slide_src}}"/>										
 					</span>
 				</div>
 				<div id='pres-not-found'>
@@ -97,6 +97,17 @@
 			$("#submit-code").click(function() {
 				var code = $("#fp-code-input input").val();
 				if (code) {window.location.href = "/track/"+code;} else {$("#fp-code-input input").focus()}
+			});
+			//make sure enter submits form
+			$('#fp-code-input input').bind("enterKey",function(e){
+				var code = $("#fp-code-input input").val();
+				if (code) {window.location.href = "/track/"+code;} else {$("#fp-code-input input").focus()}
+			});
+			$('#fp-code-input input').keyup(function(e){
+			    if(e.keyCode == 13)
+			    {
+			        $(this).trigger("enterKey");
+			    }
 			});
 						
 			// make fullscreen controls vanish on 2s inactivity

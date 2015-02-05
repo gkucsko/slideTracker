@@ -24,7 +24,7 @@
 				<div class="navbar-header">
 					<a class="navbar-brand" href="/">slideTracker</a>
 				</div>
-				<div id="navbar" class="navbar-collapse collapse">
+				<!--<div id="navbar" class="navbar-collapse collapse">
 					<ul class="nav navbar-nav navbar-right">
 						<li>
 							<a href="#">Sign In</a>
@@ -33,7 +33,7 @@
 					<form class="navbar-form navbar-right">
 						<input class="form-control" placeholder="Search..." type="text">
 					</form>
-				</div>
+				</div>-->
 			</div>
 		</nav>
 
@@ -41,36 +41,35 @@
 			<div class="col-sm-3 col-md-2 sidebar">
 				<ul class="nav nav-sidebar">
 					<li class="active">
-						<a href="/admin">Overview <span class="sr-only">(current)</span></a>
+						<a href="/admin/overview">Overview <span class="sr-only">(current)</span></a>
 					</li>
 					<li>
 						<a href="/admin/analytics">Analytics</a>
+					</li>
+					<li>
+						<a href="/admin/export">Export Log CSV</a>
 					</li>
 				</ul>
 			</div>
 			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 				<h1 class="page-header">Dashboard</h1>
 				<div class="row placeholders">
-					<div class="col-xs-6 col-sm-3">
-						<h3>Current</h3>
-						<h4>Total: {{ nPres }}</h4>
-						<h4>Active: {{ nPresAct }}</h4>
-						<h4>Clients: {{ nClients }}</h4>
+					<div ng-cloak class="col-xs-6 col-sm-3">
+						<h4><span class="glyphicon glyphicon-picture" aria-hidden="true"></span> Total: {{ nPresTot }}</h4>						
+						<h4><span class="glyphicon glyphicon-picture" aria-hidden="true"></span> Current: {{ nPres }}</h4>
+						<h4><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Total: {{ nClientsTot }}</h4>
+						<h4><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Current: {{ nClients }}</h4>
+						<h4><span class="glyphicon glyphicon-hdd" aria-hidden="true"></span> Data: {{ nMB }} MB</h4>
 					</div>
 					<div class="col-xs-6 col-sm-3 placeholder">
 						<img id="pie-chart" class="img-responsive">
-						<h4>Label</h4>
-						<span class="text-muted">Something else</span>
+						<h4>Current Presentations</h4>
+						<span class="text-muted">Shows how many active/inactive presentations there currently are.</span>
 					</div>
-					<div class="col-xs-6 col-sm-3 placeholder">
-						<img data-holder-rendered="true" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxkZWZzLz48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzM5REJBQyIvPjxnPjx0ZXh0IHg9IjczLjg3NSIgeT0iMTAwIiBzdHlsZT0iZmlsbDojMUUyOTJDO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L2c+PC9zdmc+" data-src="holder.js/200x200/auto/vine" class="img-responsive" alt="200x200">
-						<h4>Label</h4>
-						<span class="text-muted">Something else</span>
-					</div>
-					<div class="col-xs-6 col-sm-3 placeholder">
-						<img data-holder-rendered="true" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjxkZWZzLz48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzBEOEZEQiIvPjxnPjx0ZXh0IHg9IjczLjg3NSIgeT0iMTAwIiBzdHlsZT0iZmlsbDojRkZGRkZGO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+MjAweDIwMDwvdGV4dD48L2c+PC9zdmc+" data-src="holder.js/200x200/auto/sky" class="img-responsive" alt="200x200">
-						<h4>Label</h4>
-						<span class="text-muted">Something else</span>
+					<div class="col-xs-6 col-sm-6 placeholder">
+						<img id="curve-chart" class="img-responsive">
+						<h4>Total Activity</h4>
+						<span class="text-muted">Presentations over time.</span>
 					</div>
 				</div>
 
@@ -90,7 +89,7 @@
 								<th><a href="" ng-click="predicate = '-updated'; reverse=!reverse">updated</a></th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody ng-cloak>
 							<tr ng-repeat="PresRec in fullRecord | orderBy:predicate:reverse">
 								<td><a href="/track/{{ PresRec.pres_ID }}">{{ PresRec.pres_ID }}</a></td>
 								<td>{{ PresRec.creator }}</td>
@@ -130,21 +129,73 @@
 					});
 					$scope.nPresAct = nActives.length;
 					
+					drawChart1([$scope.nPresAct,$scope.nPres-$scope.nPresAct])
+					
 					// count total number of clients
 					var nClients = $.grep(data, function(element, index) {
 						return element.clients;
 					});
-					var total = 0;
+					var totalCl = 0;
 					$.each(nClients,function() {
-					    total += this.clients;
+					    totalCl += this.clients;
 					});
-					$scope.nClients = total;
+					$scope.nClients = totalCl;
 
+					// get total storage
+					var nMB = $.grep(data, function(element, index) {
+						return element.file_size;
+					});
+					var totalMB = 0;
+					$.each(nMB,function() {
+					    totalMB += this.file_size;
+					});
+					$scope.nMB = totalMB;
+					
+	
 					// save full output
 					$scope.fullRecord = data;
 
 					// standard sort by
 					$scope.predicate = '-updated';
+
+				}).error(function(data) {
+					console.log('Error: ' + data);
+				});
+
+				$http.get('/admin/get_log_entries').success(function(logs) {
+
+					// count presentations in database
+					$scope.nPresTot = logs.length;
+					
+					var pres_data = [['Date', 'Presentations'],['1-1',0]];
+					var tot_logs = 0;
+					var date_log = new Date();
+					var day = 1;
+					var month = 1;
+					logs.forEach(function(logP) {				
+						date_log = new Date(logP.created);					
+						if(month == date_log.getMonth()+1 && day == date_log.getDate()){
+							tot_logs += 1;
+						}else{
+							pres_data.push([month+'-'+day, tot_logs]);
+							tot_logs += 1;
+							month = date_log.getMonth()+1;
+							day = date_log.getDate();
+						}				
+					});
+
+					drawChart2(pres_data)
+					
+					// count total number of clients
+					var nClientsTot = $.grep(logs, function(element, index) {
+						return element.clients;
+					});
+					var totalClTot = 0;
+					$.each(nClientsTot,function() {
+					    totalClTot += this.clients;
+					});
+					$scope.nClientsTot = totalClTot;
+
 
 				}).error(function(data) {
 					console.log('Error: ' + data);
@@ -162,30 +213,47 @@
 	      google.load('visualization', '1.0', {'packages':['corechart']});
 	
 	      // Set a callback to run when the Google Visualization API is loaded.
-	      google.setOnLoadCallback(drawChart);
+	      //google.setOnLoadCallback(drawChart);
 	
 	      // Callback that creates and populates a data table,
 	      // instantiates the pie chart, passes in the data and
 	      // draws it.
-	      function drawChart() {
+	      function drawChart1(data) {
 	
 	        // Create the data table.
-	        var data = new google.visualization.DataTable();
-	        data.addColumn('string', 'Topping');
-	        data.addColumn('number', 'Slices');
-	        data.addRows([
-	          ['Active', 3],
-	          ['Inactive', 1]
+	        var data_pie = new google.visualization.DataTable();
+	        data_pie.addColumn('string', 'Status');
+	        data_pie.addColumn('number', 'Number');
+	        data_pie.addRows([
+	        	['Inactive', data[1]],
+	         	['Active', data[0]]
 	        ]);
 	
 	        // Set chart options
-	        var options = {
-	                       'width':300,
-	                       'height':200};
+	        var options_pie = {'width':200,
+	                       'height':200,
+	                       pieSliceTextStyle:{fontSize: '15'},
+	                       pieSliceText: 'value', //'label'
+	                       legend:{position:'none'}};
 	
 	        // Instantiate and draw our chart, passing in some options.
-	        var chart = new google.visualization.PieChart(document.getElementById('pie-chart'));
-	        chart.draw(data, options);
+	        var chart_pie = new google.visualization.PieChart(document.getElementById('pie-chart'));
+	        chart_pie.draw(data_pie, options_pie);
+	     }
+	     
+	     function drawChart2(data) {   
+	        // Create the data table.
+	        var data_line = google.visualization.arrayToDataTable(data);
+	
+	        // Set chart options
+	        var options_line = {'width':400,
+	                       'height':200,
+	                       legend: { position: 'none' }};
+	
+	        // Instantiate and draw our chart, passing in some options.
+	        var chart_line = new google.visualization.LineChart(document.getElementById('curve-chart'));
+	        chart_line.draw(data_line, options_line);
+	        
 	      }
 	    </script>
 

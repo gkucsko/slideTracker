@@ -30,6 +30,9 @@ var multer = require('multer');
 var cron = require('cron');
 var CronJob = cron.CronJob;
 
+// allow child processes
+var spawn = require('child_process').spawn;
+
 // amazon S3 storage
 //var AWS = require('aws-sdk');
 //AWS.config.update({region: 'us-east-1'});
@@ -40,7 +43,7 @@ var rimraf = require('rimraf');
 // static key used to avoid bots posting
 var apiKey = 'N3sN7AiWTFK9XNwSCn7um35joV6OFslL';
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', 3000);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // create a write stream (in append mode)
@@ -82,6 +85,28 @@ app.use(multer({
 // use environment variable MONGODB_STRING to store connection string 
 mongoose.connect('mongodb://'+process.env.MONGODB_STRING);
 
+// Authenticator for admin section
+app.use(function(req, res, next) {
+    var auth;
+	if (req.url.indexOf('/admin/') === 0) // 'hidden' Admin Section
+	{
+	    // check whether an autorization header was send    
+	    if (req.headers.authorization) {
+	      // only accepting basic auth, so:
+	      // * cut the starting "Basic " from the header
+	      // * decode the base64 encoded username:password
+	      auth = new Buffer(req.headers.authorization.substring(6), 'base64').toString().split(':');
+	    }
+	    // checks password
+	    if (!auth || auth[0] !== 'admin' || auth[1] !== process.env.ADMIN_PW) {
+	        res.statusCode = 401;
+	        res.setHeader('WWW-Authenticate', 'Basic realm="AdminSection"');
+	        res.end('Unauthorized');
+	        return;
+	    }
+	}
+	next();
+});
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -89,6 +114,7 @@ db.once('open', function(callback) {
 	console.log('mongodb connected');
 });
 
+// define main presentation scheme
 var presSchema = mongoose.Schema({
 	pres_ID : String,
 	creator : String,
@@ -109,6 +135,20 @@ presSchema.methods.toJSON = function() {
 }
 
 var Presentation = mongoose.model('Presentation', presSchema)
+
+// define log scheme
+var logSchema = mongoose.Schema({
+	unique_ID: String,
+	creator : String,
+	n_slides : Number,
+	file_size : Number,
+	clients : Number,
+	active : Boolean,
+	download : Boolean,
+	created : Date
+})
+
+var LogPres = mongoose.model('LogPres', logSchema)
 
 //define delete CRON job
 new CronJob('00 00 * * *', function(){
@@ -175,29 +215,25 @@ app.post('/api/v1/presentations', function(req, res) {
 		//var pres_ID = req.body.pres_ID;
 		var creator = req.body.creator;
 		var n_slides = req.body.n_slides;
-		var cur_slide = '1';
-		var file_size = '0';
-		var clients = '0';
 		var now = new Date();
 		var created = now.toJSON();
-		var updated = now.toJSON();
 
 		//create db entry
 		var new_pres = new Presentation({
 			pres_ID : pres_ID,
 			creator : creator,
 			n_slides : n_slides,
-			cur_slide : cur_slide,
-			file_size : file_size,
-			clients : clients,
+			cur_slide : 1,
+			file_size : 0,
+			clients : 0,
 			active : false,
 			download : false,
 			created : created,
-			updated : updated
+			updated : created
 		});
 
 		//save db entry
-		new_pres.save(function(err, fluffy) {
+		new_pres.save(function(err) {
 			if (err) {
 				res.status(400).json(err);
 				return;
@@ -207,12 +243,28 @@ app.post('/api/v1/presentations', function(req, res) {
 				res.status(201).json({ presentation: new_pres , passHash: passHash });
 			}
 		});
+
+		//create log entry
+		var new_log = new LogPres({
+			unique_ID : pres_ID+'_'+created,
+			creator : creator,
+			n_slides : n_slides,
+			file_size : 0,
+			clients : 0,
+			active : false,
+			download : false,
+			created : created
+		});
+
+		//save log db entry
+		new_log.save(function(err) {});
+		
 	});
 });
 
 // get presentation info
 app.get('/api/v1/presentations/:pres_ID', function(req, res) {
-	Presentation.find({ 'pres_ID' : req.params.pres_ID })
+	Presentation.find({ 'pres_ID' : req.params.pres_ID.toLowerCase() })
 	.exec(function(err, pres) {
 		if (err) {
 			res.status(400).json(err);
@@ -257,6 +309,18 @@ app.put('/api/v1/presentations/:pres_ID', function(req, res) {
 			res.status(401).json(err);
 			return;
 		}		
+
+		// update log entry if made active
+		if (r_pres.active==false && req.body.active==true) {
+			LogPres.find({ 'unique_ID' : r_pres.pres_ID+'_'+r_pres.created.toISOString()})
+			.exec(function(err, lpres) {
+				var log_pres = lpres[0];
+				log_pres.file_size = r_pres.file_size;
+				log_pres.active = true;
+				log_pres.download = r_pres.download;
+				log_pres.save(function(err) {})
+			});
+		}
 		
 		r_pres.cur_slide = req.body.cur_slide;
 		r_pres.n_slides = req.body.n_slides;
@@ -514,6 +578,17 @@ app.get('/contact', function(req, res) {
 	res.sendfile('./public/contact.html');
 });
 
+// admin section callbacks
+app.get('/admin/get_log_entries', function(req, res) {
+	LogPres.find().exec(function(err, presentations) {
+		if (err) {
+			return next(err)
+		}
+		res.status(200).json(presentations)
+	})
+});
+
+// admin section callbacks
 app.get('/admin/get_db_entries', function(req, res) {
 	Presentation.find().exec(function(err, presentations) {
 		if (err) {
@@ -524,12 +599,45 @@ app.get('/admin/get_db_entries', function(req, res) {
 });
 
 app.get('/admin/analytics', function(req, res) {
-	res.sendfile('./public/analytics.html');
+	res.sendfile('./admin/analytics.html');
 });
 
-app.get('/admin', function(req, res) {
-	res.sendfile('./public/admin.html');
+app.get('/admin/overview', function(req, res) {
+	res.sendfile('./admin/admin.html');	
 });
+
+app.get('/admin/export', function(req, res) {
+	
+	// span external process for exporting database
+	var mongoExport = spawn('mongoexport', [ 
+		'-h', process.env.MONGODB_ADDRESS,
+		'-d', process.env.MONGODB_DB, 
+		'-c', 'logpres',
+		'-u', process.env.MONGODB_NAME, 
+		'-p', process.env.MONGODB_PW,
+		'-f','unique_ID,clients,active,download,n_slides,file_size,created',
+		'--csv'
+	]);
+
+	var csv_str = '';
+
+	// prepare csv from stdout response
+	mongoExport.stdout.on('data', function (data) {
+		if (data) {
+			//csv_str += data.toString().replace(/\r\n"/g, '\r\n').replace(/\r\n\r\n/g, '\r\n').replace(/"/g, '');
+           	csv_str += data.toString().replace(/\r\n"/g, '\r\n').replace(/"/g, '');
+         }
+	});
+	
+	// send CSV response
+	mongoExport.on('exit', function (code) {
+		res.setHeader('Content-disposition', 'attachment; filename=slideTracker_logs.csv');
+		res.setHeader('Content-type', 'text/csv');
+		res.send(csv_str);
+	});
+	
+});
+
 
 // app.get('/test/s3', function(req, res) {
 // // var s3 = new AWS.S3();
@@ -564,6 +672,17 @@ io.on('connection', function(socket) {
 			if (!pres[0]) {return;}
 			var r_pres = pres[0];					
 			r_pres.clients = r_pres.clients + 1;
+			
+			// update log entry if higher peak users
+			LogPres.find({ 'unique_ID' : r_pres.pres_ID+'_'+r_pres.created.toISOString()})
+			.exec(function(err, lpres) {
+				var log_pres = lpres[0];
+				if(r_pres.clients > log_pres.clients){
+					log_pres.clients = r_pres.clients;
+					log_pres.save(function(err) {})
+				}
+			});
+			
 			r_pres.save(function(err) {if (err) {return;}});
 		});
 	}
