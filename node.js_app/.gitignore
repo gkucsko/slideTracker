@@ -1,9 +1,0 @@
-# Ignore files
-*.zip
-*.png
-*.ppt
-
-# Ignore paths that contain user-generated content.
-node_modules
-uploads
-public/files
