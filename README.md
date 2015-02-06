@@ -8,7 +8,7 @@ SlideTracker provides a convenient way to an audience follow along with a presen
 [http://www.slidetracker.org](http://www.slidetracker.org)
 
 ## Our Development Server:
-[http://54.208.192.158](http://54.208.192.158)
+[http://dev.slidetracker.org](http://dev.slidetracker.org)
 
 ## Getting started developing
 SlideTracker consists of two parts; a PowerPoint add-in acting as a client and a <a>MEAN stack</a> driven web-app to provide a server with a RESTful [API](http://54.208.192.158/api-documentation) and a simple web interface for users. The source code for both can be found in [our repository](https://github.com/GeorgKucsko/slideTracker). Depending on what you wish to be working on you need a different setup. Also check out our [dev server](http://54.208.192.158) where we will try to always have the newest code commit running for you to test out. 
