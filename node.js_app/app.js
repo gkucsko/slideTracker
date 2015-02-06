@@ -658,6 +658,13 @@ app.get('/robots.txt', function(req, res) {
 	res.sendfile('./public/robots.txt');
 });
 
+app.post('/status', function(req, res) {
+	var response = {
+			error : 0,
+			message : 'you have the newest version running'
+		};
+	res.status(200).json(response);
+});
 
 app.get('*', function(req, res) {
 	res.sendfile('./public/index.html');

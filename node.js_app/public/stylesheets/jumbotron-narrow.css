@@ -431,8 +431,16 @@ content: "Example";
 }
 
 @media (max-width : 480px) {
-.prod-hide {
-	display: none!important;
+.custom-header h3{
+	font-size: 20px;
+}
+.custom-header h2{
+	font-size: 22px;
+	margin: 0;
+}
+.header {
+	padding-left:2px;
+	padding-right:2px;
 }
 #fs-tracking-box #fs-btn-track {
 	margin-left: -60px;
