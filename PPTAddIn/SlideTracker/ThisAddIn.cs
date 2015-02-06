@@ -16,8 +16,8 @@ namespace SlideTracker
     {
         public string SlideDir = @"C:\"; //won't get used. assigned a random temp directory upon exporting
         public string fmt = "png"; //export the slides to
-        //private string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
-        public string postURL = "http://54.208.192.158/api/v1/presentations"; //dev server
+        //public string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
+        public string postURL ="http://54.208.192.158/api/v1/presentations"; //dev server
         private string userAgent = ""; //not really used. could be anything. for future development
         public string privateHash = "foobar"; //will get set when creating remote pres
         public string pres_ID = "123"; //will be overwritten by info from server
@@ -35,6 +35,8 @@ namespace SlideTracker
         private bool failedDuringPresentation = false; //will be set to true if things fail during pres
         private string logFile = @""; //file to write log notes 
         public int maxClients = 0; //max number of viewers ever
+        private int[] slideLUT; //lookup table of which slide to go to in presentation (for skipping hidden slides)
+        public string broadcastPresentationName = null; // gets set to name of presentation when uploaded
 
         #region Slide Show Functions
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
@@ -73,6 +75,7 @@ namespace SlideTracker
 
         void Application_SlideShowBegin(PowerPoint.SlideShowWindow Wn)
         {
+            if (!IsCorrectPresentation()) { return; }
             if (this.uploadSuccess)
             {
                 AddBannerToAll("slidetracker.org" + System.Environment.NewLine + "# " + this.pres_ID);
@@ -83,7 +86,8 @@ namespace SlideTracker
 
         void Application_SlideEnd(PowerPoint.Presentation Pr)
         {
-            if (this.textBoxIds.Length >0)
+            if (!IsCorrectPresentation()) { return; }
+            if (this.textBoxIds.Length >0 && this.textBoxIds!=null)
             {
                 DeleteBannerFromAll();
                 if (this.debug) { logWrite("ending Show "); }
@@ -100,16 +104,25 @@ namespace SlideTracker
 
         void Application_SlideShowNextSlide(PowerPoint.SlideShowWindow Wn)
         {
+            if (!IsCorrectPresentation()) { return; }
             if (!this.uploadSuccess) { return; }
             int curSlide = Wn.View.CurrentShowPosition;
-            if (this.debug) { logWrite(("went to next slide " + curSlide)); }
-            UpdateCurrentSlide(curSlide);
+            if (this.debug) { logWrite(("went to next slide " + curSlide + " =  slide" + this.slideLUT[curSlide-1] + "on server")); }
+            if (this.slideLUT[curSlide-1]>0)
+            {
+                UpdateCurrentSlide(this.slideLUT[curSlide-1]);
+            }
+            else
+            {
+                if (this.debug) { logWrite("not allowed on slide" + curSlide + " = " + this.slideLUT[curSlide - 1] + "on server"); }
+            }
         }
         #endregion
 
         #region Communication with server
         public string CreateRemotePresentation()
         {
+            int i = this.GetNumSlides();
             NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
             if (nics.Length > 0)
             {
@@ -120,11 +133,12 @@ namespace SlideTracker
                 this.userName = "Gorg";
                 if (this.debug) { logWrite("messed up mac address. assigning some other username"); }
             }
-       
             Dictionary<string, object> postParameters = new Dictionary<string, object>();
             postParameters.Add("pres_ID", this.pres_ID);
             postParameters.Add("creator", this.userName);
-            postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
+            postParameters.Add("n_slides", "" + this.GetNumSlides());
+            if (this.debug) { logWrite("non hidden slides = " + this.GetNumSlides()); }
+            //postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
             //leaving out optional operation string in MultipartForDataPost. default operation = "POST"
             HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL, this.userAgent, postParameters);
 
@@ -165,6 +179,7 @@ namespace SlideTracker
                 FileInfo pdfInfo = new FileInfo(pdfFiles[0]);
                 if (pdfInfo.Length > 20000000) { allGood = false; }
             }
+            if (this.debug) { logWrite("total file sizes = " + totalSize + "status = " + allGood); }
             return allGood;
         }
         
@@ -177,7 +192,17 @@ namespace SlideTracker
             {
                 string file = new FileInfo(files[fileInd]).Name;
                 string sldNum = System.Text.RegularExpressions.Regex.Match(file, @"\d+").Value;
-                string resp = UploadRemoteSlide(int.Parse(sldNum), file);
+                string resp;
+                if (this.slideLUT[int.Parse(sldNum)-1]>=0)
+                {
+                    resp = UploadRemoteSlide(this.slideLUT[int.Parse(sldNum)-1], file);
+                }
+                else
+                {
+                    resp = "";
+                    logWrite("slide " + sldNum + "not found in LUT: " + this.slideLUT[int.Parse(sldNum)-1]);
+                }
+                //string resp = UploadRemoteSlide(int.Parse(sldNum), file);
                 if (String.Compare(resp, "\"upload succeeded!\"") < 0)
                 {
                     this.uploadSuccess = false;
@@ -238,7 +263,8 @@ namespace SlideTracker
                 return "";
             }
             Dictionary<string, object> postParameters = new Dictionary<string, object>();
-            postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
+            //postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
+            postParameters.Add("n_slides", "" + this.GetNumSlides());
             postParameters.Add("cur_slide", "" + 1);
             postParameters.Add("active", "true");
             HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID,
@@ -255,7 +281,8 @@ namespace SlideTracker
             // if it fails, deletes the ID banners from the presentation
             if (!this.uploadSuccess) { return; } //shouldn't be necessary but doesn't hurt
             Dictionary<string, object> postParameters = new Dictionary<string, object>();
-            postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
+            postParameters.Add("n_slides", "" + this.GetNumSlides());
+            //postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
             postParameters.Add("cur_slide", "" + slideNumber);
             postParameters.Add("active", "true");
             string fullResponse;
@@ -335,8 +362,24 @@ namespace SlideTracker
             System.IO.Directory.CreateDirectory(dirName);
         }
 
+        public void DeleteHiddenSlides()
+        {
+            //delete the pngs of the hidden slides
+            int slideCount = this.GetNumSlides(true);
+            for (int i = 1; i <= slideCount; i++)
+            {
+                if (Globals.ThisAddIn.Application.ActivePresentation.Slides.Range(i).SlideShowTransition.Hidden == Office.MsoTriState.msoTrue)
+                {
+                    FileInfo fi = new FileInfo(this.SlideDir + "/Slide" + i + "."+ this.fmt);
+                    if (fi.Exists) { fi.Delete(); }
+                    //if (fi.Exists) { fi.Create().Dispose(); } // this will create an empty png
+                }
+            }
+        }
+        
         private void AddBannerToAll(string banner)
         {
+            // add the banner to all the slides (or just the first). adds a text box and rectangle
             PowerPoint.SlideRange allSlides = this.Application.ActivePresentation.Slides.Range(); //no argument = all slides
             int numSlides = allSlides.Count;
             int numBanners;
@@ -391,7 +434,60 @@ namespace SlideTracker
             this.textBoxIds = new string[0]; 
             if (this.debug) { logWrite("deleted IP address banners"); }
         }
+
+        public int GetNumSlides(bool includeHidden=false)
+        {
+            //returns the number of slides in the presentation. can include or not include hidden slides
+            PowerPoint.SlideRange allSlides = Globals.ThisAddIn.Application.ActivePresentation.Slides.Range();
+            int slideCount = allSlides.Count;
+            if (!includeHidden)
+            {
+                for (int i=1; i <= allSlides.Count; i++)
+                {
+                    if (allSlides[i].SlideShowTransition.Hidden==Office.MsoTriState.msoTrue) { slideCount--; }
+                }
+            }
+            return slideCount;
+            
+        }
   
+        public void MakeLUT()
+        {
+            //make the LUT s.t. LUT(slideNumber) = slideNumber on server
+            int[] lut = new int[GetNumSlides(true)];
+            lut[0] = 1;
+            int tmp = 1;
+            for (int i = 0; i < lut.Length; i++)
+            {
+                if (Globals.ThisAddIn.Application.ActivePresentation.Slides[i+1].SlideShowTransition.Hidden==Office.MsoTriState.msoFalse)
+                {
+                    lut[i] = tmp;
+                    tmp++;
+                }
+                else
+                {
+                    lut[i] = 0; //should never go to hidden slides
+                }
+            }
+            this.slideLUT = lut;
+            if (this.debug)
+            {
+                for (int i=0; i < lut.Length;i++) {logWrite("" + lut[i]); }
+            }
+        }
+        
+        public string GetLinkURL()
+        {
+            //generate direct link url
+            return this.postURL.Substring(0, this.postURL.IndexOf("/api")) + "/track/" + this.pres_ID;
+        }
+
+        public bool IsCorrectPresentation()
+        {
+            //is the active presentation the one that got sent to remote server?
+            return !(this.broadcastPresentationName != null && this.broadcastPresentationName != Globals.ThisAddIn.Application.ActivePresentation.Name);
+        }
+        
         public void logWrite(string msg)
         {
             if (System.IO.File.Exists(this.logFile))
