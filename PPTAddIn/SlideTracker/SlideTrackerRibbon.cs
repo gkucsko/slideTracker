@@ -35,8 +35,10 @@ namespace SlideTracker
         bool startup = false; // starts as false. after initializing will be true. for setting default options
         bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
         bool displayOptionsGroup = false; //is the options group displayed
+        private bool showRibbon = true;
         private Office.IRibbonUI ribbon; //the ribbon object
         internal static Office.IRibbonUI ribbon1;
+        private System.Windows.Forms.Form successForm;
         public SlideTrackerRibbon()
         {
         }
@@ -55,36 +57,45 @@ namespace SlideTracker
 
         public void Ribbon_Load(Office.IRibbonUI ribbonUI)
         {
+            if (!Globals.ThisAddIn.CheckVersion())
+            {
+                System.Windows.Forms.MessageBox.Show("You slideTracker version, " +
+                    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString() +
+                    " is out of date on no longer compatible. Please visit " + Globals.ThisAddIn.GetLinkURL() +
+                    " for the latest version. ","slideTracker Error");
+                showRibbon = false;
+
+            }
             this.ribbon = ribbonUI;
             ribbon1 = ribbonUI; // to expose this to globals.ribbons
         }
 
         #region visibility helpers
 
-        public bool IsStopButtonVisible(Office.IRibbonControl control)
+        public bool DisplayRibbon(Office.IRibbonControl control) // show/hide the whole ribbon
+        {
+            return showRibbon;
+        }
+
+        public bool IsStopButtonVisible(Office.IRibbonControl control) // show/Hide StopBroadcast button
         {
             return displayStopButton;
         }
 
-        public bool IsExportButtonVisible(Office.IRibbonControl control)
+        public bool IsExportButtonVisible(Office.IRibbonControl control) // show/hide export button, opposite of stop button
         {
             return !displayStopButton;
         }
 
-        public bool DisplayOptionsGroup(Office.IRibbonControl control)
+        public bool DisplayOptionsGroup(Office.IRibbonControl control) // show/hide options group
         {
             return displayOptionsGroup;
         }
 
-        public bool OptionsVisible(Office.IRibbonControl contro)
-        {
-            return !displayOptionsGroup;
-        }
-
-        public bool OptioinsNotVisible(Office.IRibbonControl control)
+        /*public bool OptioinsNotVisible(Office.IRibbonControl control)
         {
             return displayOptionsGroup;
-        }
+        }*/
 
         public void ToggleDisplay(Office.IRibbonControl control)
         {
@@ -93,7 +104,8 @@ namespace SlideTracker
             GetToggleDisplayLabel(control);
         }
 
-        public string GetToggleDisplayLabel(Office.IRibbonControl control)
+        public string GetToggleDisplayLabel(Office.IRibbonControl control) 
+            // text for button to display/hide the options
         {
             string ret;
             if (displayOptionsGroup)
@@ -110,16 +122,19 @@ namespace SlideTracker
         #endregion
         #region Ribbon Callbacks
 
-        public void OnExportButton(Office.IRibbonControl control)
+        public void OnExportButton(Office.IRibbonControl control) //export to png, make remote pres, upload it. 
         {
             Globals.ThisAddIn.uploadSuccess = true;
+            int pad = 10;
             System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
             System.Windows.Forms.Label lab = new System.Windows.Forms.Label();
-            progressForm.Size = new System.Drawing.Size(350, 150);
+            progressForm.Size = new System.Drawing.Size(350, 100);
             progressForm.Text = "Upload Progress";
+            lab.Width = progressForm.Width - 4 * pad;
+            lab.Top = pad;
+            lab.Left = pad;
             lab.Text = "Exporting files to " + Globals.ThisAddIn.fmt;
             lab.Font = new System.Drawing.Font("Arial", 12);
-            lab.Size = new System.Drawing.Size(340, 140);
             progressForm.Controls.Add(lab);
             progressForm.Show();
             progressForm.Update();
@@ -147,18 +162,7 @@ namespace SlideTracker
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
                 progressForm.Close();
 
-                /*System.Windows.Forms.LinkLabel linkLabel = new System.Windows.Forms.LinkLabel();
-                linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(LinkClicked);
-                linkLabel.Text = "click here to go to online presentation";
-                System.Windows.Forms.Form successForm = new System.Windows.Forms.Form();
-                System.Windows.Forms.Label successLabel = new System.Windows.Forms.Label();
-                successForm.Text = "Success";
-                successForm.Size = new System.Drawing.Size(350, 150);
-                successLabel.Text = "ALL DONE!" + System.Environment.NewLine +
-                    "Just start presenting as usual. The audience will see the tracking code on your slides.";
-                successForm.Controls.Add(successLabel);
-                successForm.Controls.Add(linkLabel);
-                successForm.Show();*/
+                DisplaySuccessform();
 
                 displayStopButton = true;
                 this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
@@ -167,11 +171,12 @@ namespace SlideTracker
                 this.ribbon.InvalidateControl("PresIDLink");
                 this.ribbon.InvalidateControl("PresIDGroup");
                 this.ribbon.InvalidateControl("NumViewers");
+                this.ribbon.InvalidateControl("AllowDownload");
 
-                Globals.ThisAddIn.broadcastPresentationName = Globals.ThisAddIn.Application.ActivePresentation.Name;
-                System.Windows.Forms.MessageBox.Show("ALL DONE!" + System.Environment.NewLine +
+
+                /*System.Windows.Forms.MessageBox.Show("ALL DONE!" + System.Environment.NewLine +
                     "Just start presenting as usual. The audience will see the tracking code on your slides.",
-                    "Success: " + Globals.ThisAddIn.broadcastPresentationName);
+                    "Success: " + Globals.ThisAddIn.broadcastPresentationName);*/
             }
             catch
             {
@@ -185,6 +190,57 @@ namespace SlideTracker
             }
 
         }
+
+        private void DisplaySuccessform() // format and display the form indicating upload success
+        {
+            System.Windows.Forms.Form successForm = new System.Windows.Forms.Form();
+            this.successForm = successForm;
+            successForm.Size = new System.Drawing.Size(450, 180);
+            successForm.Icon = new System.Drawing.Icon(System.Drawing.SystemIcons.Information, 60, 60);
+
+            int pad = 10;
+            System.Drawing.Font myFont = new System.Drawing.Font("Arial", 11);
+            
+            System.Windows.Forms.Label textLabel = new System.Windows.Forms.Label();
+            textLabel.Text = "ALL DONE!" + System.Environment.NewLine +
+                "Just start presenting as usual. The audience will see the tracking code on your slides.";
+            textLabel.AutoSize = false;
+            textLabel.Width = successForm.Width - 4*pad;
+            textLabel.Left =(successForm.Width - textLabel.Width) / 2;
+            textLabel.Top = pad;
+            textLabel.Height = 60;
+            textLabel.Font = myFont;
+
+            System.Windows.Forms.LinkLabel linkLabel = new System.Windows.Forms.LinkLabel();
+            linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(LinkClicked);
+            linkLabel.Text = "click here to go to online presentation";
+            linkLabel.VisitedLinkColor = System.Drawing.Color.Blue;
+            linkLabel.LinkColor = System.Drawing.Color.Navy;
+            linkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+            linkLabel.Font = myFont;
+            linkLabel.Size = new System.Drawing.Size(340, 80);
+            linkLabel.Top = textLabel.Height + pad;
+            linkLabel.Left = (successForm.Width - linkLabel.Width) / 2;
+
+            System.Windows.Forms.Button okButton = new System.Windows.Forms.Button();
+            okButton.Size = new System.Drawing.Size(90, 40);
+            okButton.Text = "OK";
+            okButton.Font = myFont;
+            okButton.Left = (successForm.Width - okButton.Width) / 2;
+            okButton.Top = -pad + 3 * (successForm.Height - okButton.Height) / 4;
+            okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
+            okButton.Click += new EventHandler(CloseSuccessForm);
+
+            successForm.Controls.Add(textLabel);
+            successForm.Controls.Add(okButton);
+            successForm.Controls.Add(linkLabel);
+            Globals.ThisAddIn.broadcastPresentationName = Globals.ThisAddIn.Application.ActivePresentation.Name;
+            successForm.Text = "Success: " + Globals.ThisAddIn.broadcastPresentationName;
+
+            successForm.Show();
+        }
+
+        private void CloseSuccessForm(object sender, EventArgs e) { this.successForm.Close(); }
 
         public void OnStopBroadcast(Office.IRibbonControl control)
         {
@@ -206,6 +262,7 @@ namespace SlideTracker
             this.ribbon.InvalidateControl("BroadcastButton");
             this.ribbon.InvalidateControl("StopBroadcast");
             this.ribbon.InvalidateControl("PresIDGroup");
+            this.ribbon.InvalidateControl("AllowDownload");
             Globals.ThisAddIn.uploadSuccess = false;
             Globals.ThisAddIn.maxClients = 0;
         }
@@ -214,6 +271,11 @@ namespace SlideTracker
         {
             //gets called when the AllowDownload button is checked/unchecked
             Globals.ThisAddIn.allowDownload = isClicked;
+        }
+
+        public bool EnableAllowDownload(Office.IRibbonControl control)
+        {
+            return !Globals.ThisAddIn.uploadSuccess;
         }
 
         public void OnDropDownShowIP(Office.IRibbonControl control, string selectedId, int selectedIndex)
@@ -328,6 +390,11 @@ namespace SlideTracker
             {
                 return "";
             }
+        }
+
+        private void LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(Globals.ThisAddIn.GetLinkURL());
         }
 
 

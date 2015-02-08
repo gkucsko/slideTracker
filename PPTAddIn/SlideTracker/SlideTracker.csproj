@@ -31,7 +31,7 @@
     <DefineConstants>VSTO40</DefineConstants>
     <IsWebBootstrapper>False</IsWebBootstrapper>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <PublishUrl>C:\Users\Gilad2\Desktop\G\</PublishUrl>
+    <PublishUrl>C:\Users\Gilad2\Desktop\G2\</PublishUrl>
     <InstallUrl />
     <TargetCulture>en</TargetCulture>
     <ApplicationVersion>1.0.0.1</ApplicationVersion>

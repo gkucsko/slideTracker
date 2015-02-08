@@ -120,6 +120,27 @@ namespace SlideTracker
         #endregion
 
         #region Communication with server
+        public bool CheckVersion()
+        {
+            Dictionary<string, object> postParameters = new Dictionary<string, object>();
+            string ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            postParameters.Add("version", ver);
+            string url = this.postURL.Substring(0, this.postURL.IndexOf("/api")) + "/status"; 
+            HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(url, this.userAgent, postParameters);
+
+            //now process response
+            StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+            string fullResponse = responseReader.ReadToEnd();
+            webResponse.Close();
+            //string resp = GetInfoFromJson(fullResponse,"message"); // for now not needed
+            string err = GetInfoFromJson(fullResponse, "error");
+            bool ret;
+            bool.TryParse(err,out ret);
+            return !ret;
+
+
+        }
+        
         public string CreateRemotePresentation()
         {
             int i = this.GetNumSlides();
