@@ -11,6 +11,8 @@
     "rimraf": "^2.2.8",
     "socket.io": "^1.2.1",
     "aws-sdk": "^2.1.6",
-    "cron": "^1.0.6"
+    "cron": "^1.0.6",
+    "json2csv": "^2.2.1",
+    "serve-favicon": "^2.2.0"
   }
 }

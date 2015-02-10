@@ -30,8 +30,8 @@ var multer = require('multer');
 var cron = require('cron');
 var CronJob = cron.CronJob;
 
-// allow child processes
-var spawn = require('child_process').spawn;
+// json to csv
+var json2csv = require('json2csv');
 
 // amazon S3 storage
 //var AWS = require('aws-sdk');
@@ -150,6 +150,10 @@ var logSchema = mongoose.Schema({
 
 var LogPres = mongoose.model('LogPres', logSchema)
 
+// present favicon
+var favicon = require('serve-favicon');
+app.use(favicon(path.join(__dirname,'public','images','favicon.ico')));
+
 //define delete CRON job
 new CronJob('00 00 * * *', function(){
 	//find presentations older than 1 day
@@ -196,7 +200,7 @@ app.post('/api/v1/presentations', function(req, res) {
 	
 	// generate 3 random letters and a random integer 10-99
  	var pres_ID = "";
-    var possible = "abcdefghijklmnopqrstuvwxyz";
+    var possible = "abcdefghijkmnpqrstuvwxyz";
     for( var i=0; i < 3; i++ ){pres_ID += possible.charAt(Math.floor(Math.random() * possible.length));}
 	pres_ID += Math.floor((Math.random() * 89) + 10);
 	
@@ -264,7 +268,13 @@ app.post('/api/v1/presentations', function(req, res) {
 
 // get presentation info
 app.get('/api/v1/presentations/:pres_ID', function(req, res) {
-	Presentation.find({ 'pres_ID' : req.params.pres_ID.toLowerCase() })
+	// remove special characters and whitespace
+	var lookup_ID = req.params.pres_ID.replace(/[^\w\s]/gi, '');
+	lookup_ID = lookup_ID.replace(/ /g,'');
+	// make lowercase
+	lookup_ID = lookup_ID.toLowerCase();
+	// get presentation
+	Presentation.find({ 'pres_ID' : lookup_ID })
 	.exec(function(err, pres) {
 		if (err) {
 			res.status(400).json(err);
@@ -558,8 +568,8 @@ app.get('/download', function(req, res) {
 	res.sendfile('./public/download.html');
 });
 
-app.get('/download/slideTracker_v_0_0_1', function(req, res) {
-	var file = './public/files/slideTracker_v_0_0_1.zip';
+app.get('/download/slideTracker', function(req, res) {
+	var file = './public/files/slideTracker_v_0_1_0_0.zip';
 	res.download(file);
 });
 
@@ -606,36 +616,24 @@ app.get('/admin/overview', function(req, res) {
 	res.sendfile('./admin/admin.html');	
 });
 
+// export log files in CSV format
 app.get('/admin/export', function(req, res) {
-	
-	// span external process for exporting database
-	var mongoExport = spawn('mongoexport', [ 
-		'-h', process.env.MONGODB_ADDRESS,
-		'-d', process.env.MONGODB_DB, 
-		'-c', 'logpres',
-		'-u', process.env.MONGODB_NAME, 
-		'-p', process.env.MONGODB_PW,
-		'-f','unique_ID,clients,active,download,n_slides,file_size,created',
-		'--csv'
-	]);
-
-	var csv_str = '';
-
-	// prepare csv from stdout response
-	mongoExport.stdout.on('data', function (data) {
-		if (data) {
-			//csv_str += data.toString().replace(/\r\n"/g, '\r\n').replace(/\r\n\r\n/g, '\r\n').replace(/"/g, '');
-           	csv_str += data.toString().replace(/\r\n"/g, '\r\n').replace(/"/g, '');
-         }
-	});
-	
-	// send CSV response
-	mongoExport.on('exit', function (code) {
-		res.setHeader('Content-disposition', 'attachment; filename=slideTracker_logs.csv');
-		res.setHeader('Content-type', 'text/csv');
-		res.send(csv_str);
-	});
-	
+	LogPres.find().exec(function(err, presentations) {
+		if (err) {
+			return next(err)
+		}
+		json2csv(
+	    {   data: presentations, 
+	        fields: ['unique_ID','clients','active','download','n_slides','file_size','created'], 
+	        fieldNames: ['unique_ID','clients','active','download','n_slides','file_size','created']
+	    }, 
+	    function(err, csv) {  
+	        if (err) console.log(err);
+			res.setHeader('Content-disposition', 'attachment; filename=slideTracker_logs.csv');
+			res.setHeader('Content-type', 'text/csv');
+			res.send(csv);
+	    });   
+	})
 });
 
 

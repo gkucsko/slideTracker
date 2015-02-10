@@ -1,15 +1,56 @@
+/* 
+ * slideTracker main CSS 
+ */
+
+/* hide unncessary elements if production */
 .prod-hide {
  	/*display: none!important;*/
  }
 
+/* hide angular elements during load */
 [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
     display: none !important;
 }
 
+/* general site */
 html, body {
     height: 100%;
 }
 
+/* headers */
+.custom-header {
+	max-width: 620px; 
+	padding-bottom: 20px; 
+	margin: auto;
+	text-align: center;
+}
+.custom-header h3{
+	color: #AAA;
+	font-size: 24px;
+	font-weight: bold;
+}
+.header h3:hover {
+	cursor: pointer;
+}
+
+.header, .footer {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.header h3 {
+  padding-bottom: 19px;
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 40px;
+  cursor: default;
+}
+
+/* stick footer to bottom */
 #wrap {
     min-height: 100%;
     height: auto !important;
@@ -17,40 +58,14 @@ html, body {
 	padding: 20px 0px 80px;
 }
 
-.team .img-holder {
-	width: 200px;
-	height: 220px;
-	margin: 0 auto;
-    line-height: 220px;
+.footer {
+  padding-top: 19px;
+  color: #777;
+  border-top: 1px solid #e5e5e5;
+  margin-top: -80px;
 }
 
-.team img {
-	width: 200px;
-	height: auto;
-}
-
-.team #leander {
-	width: 150px;
-}
-
-.team #clemens-g {
-	width: 160px;
-}
-
-.team #clemens-f {
-	width: 160px;
-}
-
-.team #tt-camille {
-	width: 250px;
-	margin-left: -25px;
-}
-
-.team #lets-go {
-	width: 300px;
-	margin-left: -50px;
-}
-
+/* general tool classes */
 .margin-20 {
 	margin: 20px;
 }
@@ -79,50 +94,11 @@ margin: 10px 0 10px 10px;
 	padding: 30px;
 }
 
-.instructions {
-	padding-bottom: 10px;
-}
-
-.instructions dd {
-	margin-top: 20px;
-	margin-bottom: 20px;
-	margin-left: 120px;
-}
-
-.instructions dt {
- width: 100px;
-}
-
 .col-lg-6 {
 	text-align: center;
 }
 
-#tracking-box {
-	padding-bottom: 80px;
-	padding-top: 20px;
-	width: 100%;
-	text-align: center;
-	position: relative;
-	max-width: 600px;
-	margin: 0 auto;
-	display: block;
-}
-
-.custom-header {
-	max-width: 620px; 
-	padding-bottom: 20px; 
-	margin: auto;
-	text-align: center;
-}
-
-
-.custom-header h3{
-	color: #AAA;
-	font-size: 24px;
-	font-weight: bold;
-}
-
-
+/* frontpage */
 .container .jumbotron {
 	padding: 30px;
 }
@@ -135,6 +111,32 @@ margin: 10px 0 10px 10px;
 .jumbo-r {
 	padding-left: 5px;
 	padding-right: 0px;
+}
+
+.container-narrow > hr {
+  margin: 30px 0;
+}
+
+.jumbotron {
+  text-align: center;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.jumbotron .btn {
+  padding: 14px 24px;
+  font-size: 21px;
+}
+
+/* tracking page */
+#tracking-box {
+	padding-bottom: 80px;
+	padding-top: 20px;
+	width: 100%;
+	text-align: center;
+	position: relative;
+	max-width: 600px;
+	margin: 0 auto;
+	display: block;
 }
 
 #fs-tracking-box {
@@ -301,17 +303,21 @@ a.img-link, a.img-link:hover, a.img-link:active {
 	display: inline-block;
 }
 
-.header h3:hover {
-	cursor: pointer;
+.instructions {
+	padding-bottom: 10px;
 }
 
-/* Medium Devices, Desktops */
-@media (max-width: 1200px) {
-	.github-ribbon {
-		display: none;
-	}
+.instructions dd {
+	margin-top: 20px;
+	margin-bottom: 20px;
+	margin-left: 120px;
 }
 
+.instructions dt {
+ width: 100px;
+}
+
+/* api page */
 .example {
 	position: relative;
 	padding: 45px 15px 15px;
@@ -334,102 +340,89 @@ letter-spacing: 1px;
 content: "Example";
 }
 
-/* Everything but the jumbotron gets side spacing for mobile first views */
-.header,
-.marketing,
-.footer {
-  padding-right: 15px;
-  padding-left: 15px;
+
+/* contact page */
+.team .img-holder {
+	width: 200px;
+	height: 220px;
+	margin: 0 auto;
+    line-height: 220px;
 }
 
-/* Custom page header */
-.header {
-  border-bottom: 1px solid #e5e5e5;
-}
-/* Make the masthead heading the same height as the navigation */
-.header h3 {
-  padding-bottom: 19px;
-  margin-top: 0;
-  margin-bottom: 0;
-  line-height: 40px;
-  cursor: default;
+.team img {
+	width: 200px;
+	height: auto;
 }
 
-/* Custom page footer */
-.footer {
-  padding-top: 19px;
-  color: #777;
-  border-top: 1px solid #e5e5e5;
-  margin-top: -80px;
+.team #leander {
+	width: 150px;
 }
 
+.team #clemens-g {
+	width: 160px;
+}
 
-/* Customize container */
+.team #clemens-f {
+	width: 160px;
+}
+
+.team #tt-camille {
+	width: 250px;
+	margin-left: -25px;
+}
+
+.team #lets-go {
+	width: 300px;
+	margin-left: -50px;
+}
+
+/* 
+ *Responsive design 
+ */
+
+
+/* Medium Devices, Desktops */
+@media (max-width: 1200px) {
+.github-ribbon {
+	display: none;
+}
+}
+
 @media (min-width: 768px) {
-  .container {
+.container {
     max-width: 960px;
-  }
 }
-.container-narrow > hr {
-  margin: 30px 0;
 }
 
-/* Main marketing message and sign up button */
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 768px) {
+.header, .footer {
+    padding-right: 0;
+    padding-left: 0;
+}
+.header {
+    margin-bottom: 30px;
+}
 .jumbotron {
-  text-align: center;
-  border-bottom: 1px solid #e5e5e5;
+    border-bottom: 0;
 }
-.jumbotron .btn {
-  padding: 14px 24px;
-  font-size: 21px;
-}
-
-/* Supporting marketing content */
-.marketing {
-  margin: 40px 0;
-}
-.marketing p + h4 {
-  margin-top: 28px;
 }
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
-  /* Remove the padding we set earlier */
-  .header,
-  .marketing,
-  .footer {
-    padding-right: 0;
-    padding-left: 0;
-  }
-  /* Space out the masthead */
-  .header {
+.header, .footer {
+	padding-right: 0;
+	padding-left: 0;
+}
+.header {
     margin-bottom: 30px;
-  }
-  /* Remove the bottom border on the jumbotron for visual effect */
-  .jumbotron {
+}
+.jumbotron {
     border-bottom: 0;
-  }
+}
 }
 
-/* Responsive: Portrait tablets and up */
-@media screen and (min-width: 768px) {
-  /* Remove the padding we set earlier */
-  .header,
-  .marketing,
-  .footer {
-    padding-right: 0;
-    padding-left: 0;
-  }
-  /* Space out the masthead */
-  .header {
-    margin-bottom: 30px;
-  }
-  /* Remove the bottom border on the jumbotron for visual effect */
-  .jumbotron {
-    border-bottom: 0;
-  }
-}
-
+/* very small devices */
 @media (max-width : 480px) {
 .custom-header h3{
 	font-size: 20px;

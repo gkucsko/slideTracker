@@ -95,6 +95,8 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		$('#fp-code-input input').focus();
 		$('#submit-code').click(function() {
 			var code = $('#fp-code-input input').val();
+			code = code.replace(/[^\w\s]/gi, '');
+			code = code.replace(/ /g,'');
 			if (code) {
 				window.location.href = '/track/' + code;
 			} else {
@@ -106,6 +108,8 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		$('#fp-code-input input').bind('enterKey', function(e) {
 			var code = $('#fp-code-input input').val();
 			if (code) {
+				code = code.replace(/[^\w\s]/gi, '');
+				code = code.replace(/ /g,'');
 				window.location.href = '/track/' + code;
 			} else {
 				$('#fp-code-input input').focus()
