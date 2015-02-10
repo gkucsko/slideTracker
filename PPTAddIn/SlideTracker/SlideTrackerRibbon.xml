@@ -23,7 +23,7 @@
             <item id="TR" label="Top right"/>
           </dropDown>
           <checkBox id="AllowDownload" label="Allow pdf download" onAction="OnAllowDownload" screentip="allow viewers to download pdf"
-                    supertip="Hidden slides will be viewable. Cannot change while broadcast is active" getEnabled="EnableAllowDownload"/>
+                    supertip="Cannot change while broadcast is active" getEnabled="EnableAllowDownload"/>
         </group>
         
         <group id="BroadcastGroup">

@@ -26,7 +26,7 @@ namespace SlideTracker
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
         public bool allowDownload = false;// allow others to download pdf from website
-        public bool debug = false; //write stuff to log file
+        public bool debug = true; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 90; // width in points of text box
@@ -281,7 +281,7 @@ namespace SlideTracker
             StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
             string fullResponse = responseReader.ReadToEnd();
             webResponse.Close();
-            logWrite(fullResponse);
+            if (this.debug) { logWrite(fullResponse); }
             return fullResponse;
         }
 

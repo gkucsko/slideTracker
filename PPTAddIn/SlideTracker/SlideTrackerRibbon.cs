@@ -167,8 +167,9 @@ namespace SlideTracker
                 displayStopButton = true;
                 UpdateDisplay();
             }
-            catch
+            catch (Exception e)
             {
+                if (Globals.ThisAddIn.debug) { Globals.ThisAddIn.logWrite(e.ToString()); }
                 Globals.ThisAddIn.uploadSuccess = false;
                 System.Windows.Forms.MessageBox.Show("Problem communicating with server. Check internet connection and try again");
                 //progressForm.Close();
