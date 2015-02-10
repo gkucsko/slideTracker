@@ -9,6 +9,7 @@
 //------------------------------------------------------------------------------
 
 namespace SlideTracker.Properties {
+    using System;
     
     
     /// <summary>

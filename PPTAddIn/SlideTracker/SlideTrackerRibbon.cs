@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using Office = Microsoft.Office.Core;
@@ -35,10 +35,10 @@ namespace SlideTracker
         bool startup = false; // starts as false. after initializing will be true. for setting default options
         bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
         bool displayOptionsGroup = false; //is the options group displayed
-        private bool showRibbon = true;
+        private bool showRibbon = true; //should the ribbon be shown at all
         private Office.IRibbonUI ribbon; //the ribbon object
-        internal static Office.IRibbonUI ribbon1;
-        private System.Windows.Forms.Form successForm;
+        internal static Office.IRibbonUI ribbon1; //for access from other functions
+        private System.Windows.Forms.Form successForm; //form to notify success
         public SlideTrackerRibbon()
         {
         }
@@ -165,18 +165,7 @@ namespace SlideTracker
                 DisplaySuccessform();
 
                 displayStopButton = true;
-                this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
-                this.ribbon.InvalidateControl("StopBroadcast"); //update display
-                this.ribbon.InvalidateControl("PresID");
-                this.ribbon.InvalidateControl("PresIDLink");
-                this.ribbon.InvalidateControl("PresIDGroup");
-                this.ribbon.InvalidateControl("NumViewers");
-                this.ribbon.InvalidateControl("AllowDownload");
-
-
-                /*System.Windows.Forms.MessageBox.Show("ALL DONE!" + System.Environment.NewLine +
-                    "Just start presenting as usual. The audience will see the tracking code on your slides.",
-                    "Success: " + Globals.ThisAddIn.broadcastPresentationName);*/
+                UpdateDisplay();
             }
             catch
             {
@@ -203,7 +192,7 @@ namespace SlideTracker
             
             System.Windows.Forms.Label textLabel = new System.Windows.Forms.Label();
             textLabel.Text = "ALL DONE!" + System.Environment.NewLine +
-                "Just start presenting as usual. The audience will see the tracking code on your slides.";
+                "Just start presenting as usual. The audience will see the tracking ID on your slides.";
             textLabel.AutoSize = false;
             textLabel.Width = successForm.Width - 4*pad;
             textLabel.Left =(successForm.Width - textLabel.Width) / 2;
@@ -213,7 +202,7 @@ namespace SlideTracker
 
             System.Windows.Forms.LinkLabel linkLabel = new System.Windows.Forms.LinkLabel();
             linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(LinkClicked);
-            linkLabel.Text = "click here to go to online presentation";
+            linkLabel.Text = Globals.ThisAddIn.GetLinkURL();
             linkLabel.VisitedLinkColor = System.Drawing.Color.Blue;
             linkLabel.LinkColor = System.Drawing.Color.Navy;
             linkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
@@ -221,6 +210,7 @@ namespace SlideTracker
             linkLabel.Size = new System.Drawing.Size(340, 80);
             linkLabel.Top = textLabel.Height + pad;
             linkLabel.Left = (successForm.Width - linkLabel.Width) / 2;
+            linkLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
 
             System.Windows.Forms.Button okButton = new System.Windows.Forms.Button();
             okButton.Size = new System.Drawing.Size(90, 40);
@@ -259,12 +249,20 @@ namespace SlideTracker
             }
             displayStopButton = false;
             Globals.ThisAddIn.broadcastPresentationName = null;
-            this.ribbon.InvalidateControl("BroadcastButton");
-            this.ribbon.InvalidateControl("StopBroadcast");
-            this.ribbon.InvalidateControl("PresIDGroup");
-            this.ribbon.InvalidateControl("AllowDownload");
+            UpdateDisplay(); // go back to start broadcast button, remove pres_ID, etc. 
             Globals.ThisAddIn.uploadSuccess = false;
             Globals.ThisAddIn.maxClients = 0;
+        }
+
+        private void UpdateDisplay() //update the controls that may get changed
+        {
+            this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
+            this.ribbon.InvalidateControl("StopBroadcast"); //update display
+            this.ribbon.InvalidateControl("PresID");
+            this.ribbon.InvalidateControl("PresIDLink");
+            this.ribbon.InvalidateControl("PresIDGroup");
+            this.ribbon.InvalidateControl("NumViewers");
+            this.ribbon.InvalidateControl("AllowDownload");
         }
 
         public void OnAllowDownload(Office.IRibbonControl control, bool isClicked)
@@ -273,17 +271,18 @@ namespace SlideTracker
             Globals.ThisAddIn.allowDownload = isClicked;
         }
 
-        public bool EnableAllowDownload(Office.IRibbonControl control)
+        public bool EnableAllowDownload(Office.IRibbonControl control) //callback for clicking "allow Downloads"
         {
             return !Globals.ThisAddIn.uploadSuccess;
         }
 
         public void OnDropDownShowIP(Office.IRibbonControl control, string selectedId, int selectedIndex)
+        // callback for selecting which slides to display tracking ID 
         {
             Globals.ThisAddIn.showOnAll = ("all" == selectedId);
         }
 
-        public string GetSelectedShowIP(Office.IRibbonControl control)
+        public string GetSelectedShowIP(Office.IRibbonControl control) //return list item for which slides to show tracking ID
         {
             //set default dropdown menu to "all"
             //this is a hack and will break if we change the order of things
@@ -299,6 +298,7 @@ namespace SlideTracker
         }
 
         public void OnBannerLocation(Office.IRibbonControl control, string selectedID, int selectedIndex)
+        // callback for banner location dropdown
         {
             float width = Globals.ThisAddIn.Application.ActivePresentation.PageSetup.SlideWidth - (float)Globals.ThisAddIn.width;
             float height = Globals.ThisAddIn.Application.ActivePresentation.PageSetup.SlideHeight - (float)Globals.ThisAddIn.height;
@@ -324,9 +324,9 @@ namespace SlideTracker
             }
         }
 
-        public string GetSelectedShowBanner(Office.IRibbonControl control)
-        //this is a hack. relies on the fact that this downdown loads second
+        public string GetSelectedShowBanner(Office.IRibbonControl control) //returns list item for where on slide to show tracking ID
         {
+            //this is a hack. relies on the fact that this downdown loads second
             if (startup)
             {
                 return control.Id;
@@ -345,7 +345,7 @@ namespace SlideTracker
             }
         }
 
-        public string GetPresLink(Office.IRibbonControl control)
+        public string GetPresLink(Office.IRibbonControl control) //returns the link text for presentation
         {
             if (Globals.ThisAddIn.uploadSuccess)
             {
@@ -357,17 +357,15 @@ namespace SlideTracker
             }
         }
 
-        public void FollowPresLink(Office.IRibbonControl control)
+        public void FollowPresLink(Office.IRibbonControl control) //executed when link pressed in ribbon
         {
             if (Globals.ThisAddIn.uploadSuccess)
             {
-                //int pos = Globals.ThisAddIn.postURL.IndexOf("/api");
-                //string link = Globals.ThisAddIn.postURL.Substring(0, pos) + "/track/" + Globals.ThisAddIn.pres_ID;
                 System.Diagnostics.Process.Start(Globals.ThisAddIn.GetLinkURL());
             }
         }
 
-        public string GetPresID(Office.IRibbonControl control)
+        public string GetPresID(Office.IRibbonControl control) //return the text for pres_ID to ribbon
         {
             if (Globals.ThisAddIn.uploadSuccess)
             {
@@ -380,7 +378,7 @@ namespace SlideTracker
             }
         }
 
-        public string GetNumViewers(Office.IRibbonControl control)
+        public string GetNumViewers(Office.IRibbonControl control) //return the text for the max num viewers for ribbon
         {
             if (Globals.ThisAddIn.maxClients > 0 && Globals.ThisAddIn.uploadSuccess)
             {
@@ -392,7 +390,7 @@ namespace SlideTracker
             }
         }
 
-        private void LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+        private void LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e) //callback for clicking link
         {
             System.Diagnostics.Process.Start(Globals.ThisAddIn.GetLinkURL());
         }
