@@ -12,6 +12,7 @@ namespace SlideTracker
     public static class FormUpload
     {
         private static readonly Encoding encoding = Encoding.UTF8;
+        public static readonly int maxAttempts = 3; //how many times to try to connect
         public static HttpWebResponse MultipartFormDataPost(string postUrl, string userAgent, Dictionary<string, object> postParameters, string operation = "POST")
         {
             postParameters.Add("key", "N3sN7AiWTFK9XNwSCn7um35joV6OFslL"); //add key to all forms
@@ -24,38 +25,53 @@ namespace SlideTracker
         }
         private static HttpWebResponse PostForm(string postUrl, string userAgent, string contentType, byte[] formData, string operation)
         {
-            HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
-
-            if (request == null)
+            bool redo = true;
+            int retries = 0;
+            HttpWebResponse retResponse = null;
+            while (redo && retries < maxAttempts)
             {
-                throw new NullReferenceException("request is not a http request");
-            }
-
-            // Set up the request properties.
-            request.Method = operation; // "POST";
-            request.ContentType = contentType;
-            request.UserAgent = userAgent;
-            request.CookieContainer = new CookieContainer();
-            request.ContentLength = formData.Length;
-            request.Timeout = 4000; //in ms
-
-            // You could add authentication here as well if needed:
-            // request.PreAuthenticate = true;
-            // request.AuthenticationLevel = System.Net.Security.AuthenticationLevel.MutualAuthRequested;
-            // request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.Encoding.Default.GetBytes("username" + ":" + "password")));
-
-            // Send the form data to the request.
-            using (Stream requestStream = request.GetRequestStream())
-            {
-                requestStream.Write(formData, 0, formData.Length);
-                requestStream.Close();
-                if (Globals.ThisAddIn.debug)
+                try
                 {
-                    Globals.ThisAddIn.logWrite("Form data length:" + formData.Length);
+                    redo = false;
+                     HttpWebRequest request = WebRequest.Create(postUrl) as HttpWebRequest;
+                    if (request == null)
+                    {
+                        throw new NullReferenceException("request is not a http request");
+                    }
+                    // Set up the request properties.
+                    request.Method = operation; // "POST";
+                    request.ContentType = contentType;
+                    request.UserAgent = userAgent;
+                    request.CookieContainer = new CookieContainer();
+                    request.ContentLength = formData.Length;
+                    request.Timeout = 750; //in ms
+
+                    // You could add authentication here as well if needed:
+                    // request.PreAuthenticate = true;
+                    // request.AuthenticationLevel = System.Net.Security.AuthenticationLevel.MutualAuthRequested;
+                    // request.Headers.Add("Authorization", "Basic " + Convert.ToBase64String(System.Text.Encoding.Default.GetBytes("username" + ":" + "password")));
+
+                    // Send the form data to the request.
+                    using (Stream requestStream = request.GetRequestStream())
+                    {
+                        requestStream.Write(formData, 0, formData.Length);
+                        requestStream.Close();
+                        if (Globals.ThisAddIn.debug)
+                        {
+                            Globals.ThisAddIn.logWrite("Form data length:" + formData.Length);
+                        }
+                    }
+                    retResponse = request.GetResponse() as HttpWebResponse;
+                }
+                catch
+                {
+                    redo = true;
+                    retries++;
+                    if (Globals.ThisAddIn.debug) { Globals.ThisAddIn.logWrite("retrying..."); }
                 }
             }
 
-            return request.GetResponse() as HttpWebResponse;
+            return retResponse;
         }
 
         private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary)

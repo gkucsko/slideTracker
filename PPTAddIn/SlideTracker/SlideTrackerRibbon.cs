@@ -57,11 +57,12 @@ namespace SlideTracker
 
         public void Ribbon_Load(Office.IRibbonUI ribbonUI)
         {
-            if (!Globals.ThisAddIn.CheckVersion())
+            int i = Globals.ThisAddIn.CheckVersion(); //1=bad version, 0=good, -1=no connection
+            if (i==1) //bad version
             {
-                System.Windows.Forms.MessageBox.Show("You slideTracker version, " +
+                System.Windows.Forms.MessageBox.Show("Your slideTracker version, " +
                     System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString() +
-                    " is out of date on no longer compatible. Please visit " + Globals.ThisAddIn.GetLinkURL() +
+                    " is out of date on no longer compatible. Please visit www.slidetracker.org" +
                     " for the latest version. ","slideTracker Error");
                 showRibbon = false;
 
@@ -124,13 +125,19 @@ namespace SlideTracker
 
         public void OnExportButton(Office.IRibbonControl control) //export to png, make remote pres, upload it. 
         {
+            if ( Globals.ThisAddIn.CheckVersion() < 0) // -1 = no internet connection
+            {
+                System.Windows.Forms.MessageBox.Show("Cannot connect to internet. Please fix connection and try again", "Connection error");
+                return;
+            }
             Globals.ThisAddIn.uploadSuccess = true;
             int pad = 10;
             System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
+            progressForm.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             System.Windows.Forms.Label lab = new System.Windows.Forms.Label();
-            progressForm.Size = new System.Drawing.Size(350, 100);
-            progressForm.Text = "Upload Progress";
-            lab.Width = progressForm.Width - 4 * pad;
+            progressForm.AutoSize = true; // progressForm.Size = new System.Drawing.Size(450, 150); 
+            lab.AutoSize = true; //lab.Width = progressForm.Width - 4 * pad;
+            progressForm.Text = "Upload Progress";            
             lab.Top = pad;
             lab.Left = pad;
             lab.Text = "Exporting files to " + Globals.ThisAddIn.fmt;
@@ -172,7 +179,6 @@ namespace SlideTracker
                 if (Globals.ThisAddIn.debug) { Globals.ThisAddIn.logWrite(e.ToString()); }
                 Globals.ThisAddIn.uploadSuccess = false;
                 System.Windows.Forms.MessageBox.Show("Problem communicating with server. Check internet connection and try again");
-                //progressForm.Close();
             }
             finally
             {
@@ -185,7 +191,9 @@ namespace SlideTracker
         {
             System.Windows.Forms.Form successForm = new System.Windows.Forms.Form();
             this.successForm = successForm;
-            successForm.Size = new System.Drawing.Size(450, 180);
+            successForm.Width = 450;
+            successForm.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            //successForm.Size = new System.Drawing.Size(550, 300); //450 180
             successForm.Icon = new System.Drawing.Icon(System.Drawing.SystemIcons.Information, 60, 60);
 
             int pad = 10;
@@ -194,11 +202,10 @@ namespace SlideTracker
             System.Windows.Forms.Label textLabel = new System.Windows.Forms.Label();
             textLabel.Text = "ALL DONE!" + System.Environment.NewLine +
                 "Just start presenting as usual. The audience will see the tracking ID on your slides.";
-            textLabel.AutoSize = false;
             textLabel.Width = successForm.Width - 4*pad;
             textLabel.Left =(successForm.Width - textLabel.Width) / 2;
             textLabel.Top = pad;
-            textLabel.Height = 60;
+            textLabel.Height = 100;
             textLabel.Font = myFont;
 
             System.Windows.Forms.LinkLabel linkLabel = new System.Windows.Forms.LinkLabel();
@@ -208,7 +215,9 @@ namespace SlideTracker
             linkLabel.LinkColor = System.Drawing.Color.Navy;
             linkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
             linkLabel.Font = myFont;
-            linkLabel.Size = new System.Drawing.Size(340, 80);
+            linkLabel.Width = successForm.Width - 4 * pad;
+            linkLabel.Height = textLabel.Height;
+            //linkLabel.Size = new System.Drawing.Size(340, 80);
             linkLabel.Top = textLabel.Height + pad;
             linkLabel.Left = (successForm.Width - linkLabel.Width) / 2;
             linkLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;

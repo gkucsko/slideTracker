@@ -26,7 +26,7 @@ namespace SlideTracker
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
         public bool allowDownload = false;// allow others to download pdf from website
-        public bool debug = true; //write stuff to log file
+        public bool debug = false; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 90; // width in points of text box
@@ -120,15 +120,16 @@ namespace SlideTracker
         #endregion
 
         #region Communication with server
-        public bool CheckVersion()
+        public int CheckVersion() // 0 = good, 1 = outdated, -1 = no internet connection
         {
-            bool ret;
+            int ret;
             try
             {
                 Dictionary<string, object> postParameters = new Dictionary<string, object>();
                 string ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
                 postParameters.Add("version", ver);
                 string url = this.postURL.Substring(0, this.postURL.IndexOf("/api")) + "/status";
+                
                 HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(url, this.userAgent, postParameters);
 
                 //now process response
@@ -137,12 +138,11 @@ namespace SlideTracker
                 webResponse.Close();
                 //string resp = GetInfoFromJson(fullResponse,"message"); // for now not needed
                 string err = GetInfoFromJson(fullResponse, "error");
-                bool.TryParse(err, out ret);
-                ret = !ret;
+                int.TryParse(err, out ret); // 0 = success, 1 = error
             }
             catch
             {
-                ret = false;
+                ret = -1;
             }
 
             return ret;
