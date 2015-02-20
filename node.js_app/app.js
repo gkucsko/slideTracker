@@ -569,7 +569,7 @@ app.get('/download', function(req, res) {
 });
 
 app.get('/download/slideTracker', function(req, res) {
-	var file = './public/files/slideTracker_v_0_1_0_0.zip';
+	var file = './public/files/slideTracker_0_1_0_0.zip';
 	res.download(file);
 });
 

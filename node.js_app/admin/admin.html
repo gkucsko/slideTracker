@@ -59,7 +59,7 @@
 						<h4><span class="glyphicon glyphicon-picture" aria-hidden="true"></span> Current: {{ nPres }}</h4>
 						<h4><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Total: {{ nClientsTot }}</h4>
 						<h4><span class="glyphicon glyphicon-user" aria-hidden="true"></span> Current: {{ nClients }}</h4>
-						<h4><span class="glyphicon glyphicon-hdd" aria-hidden="true"></span> Data: {{ nMB }} MB</h4>
+						<h4><span class="glyphicon glyphicon-hdd" aria-hidden="true"></span> Data: {{ Math.round(nMB/1000000*10)/10 }} MB</h4>
 					</div>
 					<div class="col-xs-6 col-sm-3 placeholder">
 						<img id="pie-chart" class="img-responsive">

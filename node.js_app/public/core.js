@@ -284,7 +284,12 @@ slideTrack.controller('mainController', function ($scope, $http) {
 			if($scope.bFs){
 				$('#fs-exit').click();
 			}
-		}
+		else if(e.keyCode == 84) { // t
+			if($scope.bFs){
+				$('#fs-btn-track').click();
+			}else{
+				$('#btn-track').click();	
+			}
 	});
 		
 	// start tracking on initial load
