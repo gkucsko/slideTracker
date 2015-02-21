@@ -26,12 +26,12 @@
 					<nav>
 						<ul class="nav nav-pills pull-right">
 							<li>
+								<a class="btn btn-default" href="/download">Get your own</a>
+							</li>
+							<li>
 								<a class="sm-icon" href="https://github.com/gkucsko/slideTracker">
 									<img src="/images/github-icon.png"/>
 								</a>
-							</li>
-							<li>
-								<a class="btn btn-default" href="/download">Get your own</a>
 							</li>
 							<li>
 								<a class="prod-hide" href="/api-documentation">API</a>
@@ -140,29 +140,83 @@
 		<!-- end google analytics code -->
 		
 		<!-- easter egg -->
-		<div id="badger" style="position:fixed;left:-100px;bottom:0;">
+		<div id="badger" style="position:fixed;left:-100px;bottom:20px;display:none;">
 			<img style="width:100px;" src="/images/badger.gif"/>
 		</div>
+		<div id="badger2" style="position:fixed;right:-100px;bottom:20px;display:none;">
+			<img style="width:100px;" src="/images/badger.gif"/>
+		</div>
+		<div id="snake" style="position:fixed;left:-180px;bottom:0;display:none;">
+			<img style="width:180px;" src="/images/snake.gif"/>
+		</div>
+		<div id="snake2" style="position:fixed;right:-180px;bottom:0;display:none;">
+			<img style="width:180px;" src="/images/snake2.gif"/>
+		</div>
 		<script>		
-		var badger_k1 = 0;
-		var badger_k2 = 0;
+		var egg_k = 0;
+		var badger_k = 0;
+		var snake_k = 0;
+		var snake_pos = 1; // 1-left, 0-right
+		var badger_pos = 1; // 1-left, 0-right
 		var badger_anim = 0;
+		var snake_anim = 0;
 		$(document).keydown(function (e) {
-			if (e.which == 69) {badger_k1=1;} //e
-		    if (e.which == 66) {badger_k2=1;} //b
-		    if (badger_k1 && badger_k2 && !badger_anim){
+			if (e.which == 69) {egg_k=1;} //e
+		    if (e.which == 66) {badger_k=1;} //b
+		    if (e.which == 83) {snake_k=1;} //s
+		    if (egg_k && badger_k && !badger_anim){
 		    	badger_anim=1;
-				$( "#badger" ).animate({
-				left: "+=100%"
-				}, 5000, function() {
-					$( "#badger" ).css("left","-100px")
-					badger_anim=0;
-				});
+		    	if (badger_pos){
+			    	$( "#badger" ).css("display","block")
+					$( "#badger" ).animate({
+					left: "+=110%"
+					}, 5000, function() {
+						$( "#badger" ).css("display","none")
+						$( "#badger" ).css("left","-100px")
+						badger_anim=0;
+						badger_pos=0;
+					});
+				}else{
+			    	$( "#badger2" ).css("display","block")
+					$( "#badger2" ).animate({
+					right: "+=110%"
+					}, 5000, function() {
+						$( "#badger2" ).css("display","none")
+						$( "#badger2" ).css("right","-100px")
+						badger_anim=0;
+						badger_pos=1;
+					});
+				}
+		    }
+		    if (egg_k && snake_k && !snake_anim){
+		    	snake_anim=1;
+		    	if (snake_pos){
+			    	$( "#snake" ).css("display","block")
+					$( "#snake" ).animate({
+					left: "+=110%"
+					}, 8000, function() {
+						$( "#snake" ).css("display","none")
+						$( "#snake" ).css("left","-180px")
+						snake_anim=0;
+						snake_pos=0;
+					});
+				}else{
+			    	$( "#snake2" ).css("display","block")
+					$( "#snake2" ).animate({
+					right: "+=110%"
+					}, 8000, function() {
+						$( "#snake2" ).css("display","none")
+						$( "#snake2" ).css("right","-180px")
+						snake_anim=0;
+						snake_pos=1;
+					});
+				}
 		    }
 		});
 		$(document).keyup(function (e) {
-			if (e.which == 69) {badger_k1=0;} //e
-		    if (e.which == 66) {badger_k2=0;} //b
+			if (e.which == 69) {egg_k=0;} //e
+		    if (e.which == 66) {badger_k=0;} //b
+		    if (e.which == 83) {snake_k=0;} //s
 		});
 		</script>
 		<!-- end easter egg -->
