@@ -2,32 +2,34 @@
 <customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui" onLoad="Ribbon_Load">
   <ribbon>
     <tabs>
-      <tab idMso="TabAddIns">
+      <!--<tab idMso="TabAddIns" getVisible="DisplayRibbon" label="slideTracker" keytip="ST">-->
+      <tab id="SlideTrackerTab" getVisible="DisplayRibbon" label="slideTracker" keytip="ST">
 
         <group id="ToggleDispGroup">
           <button id="HideOptionsButton" showLabel="true" size="large" imageMso="ToolboxGallery" visible ="true"
                   onAction="ToggleDisplay" getLabel="GetToggleDisplayLabel"/>
         </group>
         
-        <group id="OptionsGroup" label="SlideTracker" supertip="track your slides online" getVisible="DisplayOptionsGroup">
-          <dropDown id="ShowIPAddress" label="Display tracking code on:" onAction="OnDropDownShowIP" visible="true" getSelectedItemID="GetSelectedShowIP">
+        <group id="OptionsGroup" supertip="track your slides online" getVisible="DisplayOptionsGroup" keytip="O">
+          <dropDown id="ShowIPAddress" label="Display tracking ID on:" onAction="OnDropDownShowIP" visible="true" 
+                    getSelectedItemID="GetSelectedShowIP" screentip="Choose which slides to display the tracking ID">
             <item id="all" label="All slides" />
             <item id="first" label="First slide only" />
           </dropDown>
-          <dropDown id="IPLocation" label="Banner Location:" onAction="OnBannerLocation" visible="true" getSelectedItemID="GetSelectedShowBanner">
+          <dropDown id="IPLocation" onAction="OnBannerLocation" visible="true" getSelectedItemID="GetSelectedShowBanner" 
+                    screentip="Choose which corner of the presentation to display tracking ID"> <!--has no text-->
             <item id="BL" label="Bottom Left"/>
             <item id ="BR" label="Bottom Right"/>
             <item id ="TL" label="Top Left"/>
             <item id="TR" label="Top right"/>
           </dropDown>
           <checkBox id="AllowDownload" label="Allow pdf download" onAction="OnAllowDownload" screentip="allow viewers to download pdf"
-                    supertip="Hidden slides will be viewable"/>
+                    supertip="Cannot change while broadcast is active" getEnabled="EnableAllowDownload"/>
         </group>
         
         <group id="BroadcastGroup">
           <button id="BroadcastButton" label="Start sharing" showLabel="true" size="large" imageMso="ConnectedToolSyncMenu" getVisible="IsExportButtonVisible"
-              screentip="Export" onAction="OnExportButton"
-              supertip="Exports slides for others to track."/>
+              screentip="Export" onAction="OnExportButton" supertip="Exports slides for others to track." keytip="S"/>
           <button id="StopBroadcast" label="Stop Broadcasting" showLabel="true" size="large" imageMso="PreviewClose"
                screentip="stop broadcasting" onAction="OnStopBroadcast" getVisible="IsStopButtonVisible"/>
         </group>
@@ -36,6 +38,7 @@
           <button id="PresIDLink" onAction="FollowPresLink" getLabel="GetPresLink" supertip="Direct audience to this URL" imageMso="HyperlinkEdit"/>
           <labelControl id="NumViewers" getLabel="GetNumViewers" visible="true"/>
         </group>
+        
       </tab>
     </tabs>
   </ribbon>

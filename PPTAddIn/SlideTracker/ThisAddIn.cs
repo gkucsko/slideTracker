@@ -26,10 +26,10 @@ namespace SlideTracker
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
         public bool allowDownload = false;// allow others to download pdf from website
-        public bool debug = true; //write stuff to log file
+        public bool debug = false; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
-        public float width = 85; // width in points of text box
+        public float width = 90; // width in points of text box
         public float height = 30; // height in points of text box
         public bool uploadSuccess = false; // set to true upon success in upload
         private bool failedDuringPresentation = false; //will be set to true if things fail during pres
@@ -78,7 +78,7 @@ namespace SlideTracker
             if (!IsCorrectPresentation()) { return; }
             if (this.uploadSuccess)
             {
-                AddBannerToAll("slidetracker.org" + System.Environment.NewLine + "# " + this.pres_ID);
+                AddBannerToAll("slideTracker.org" + System.Environment.NewLine + "# " + this.pres_ID);
                 if (this.debug) { logWrite("Started Show "); }
             }
 
@@ -120,6 +120,36 @@ namespace SlideTracker
         #endregion
 
         #region Communication with server
+        public int CheckVersion() // 0 = good, 1 = outdated, -1 = no internet connection
+        {
+            int ret;
+            try
+            {
+                Dictionary<string, object> postParameters = new Dictionary<string, object>();
+                string ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                postParameters.Add("version", ver);
+                string url = this.postURL.Substring(0, this.postURL.IndexOf("/api")) + "/status";
+                
+                HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(url, this.userAgent, postParameters);
+
+                //now process response
+                StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+                string fullResponse = responseReader.ReadToEnd();
+                webResponse.Close();
+                //string resp = GetInfoFromJson(fullResponse,"message"); // for now not needed
+                string err = GetInfoFromJson(fullResponse, "error");
+                int.TryParse(err, out ret); // 0 = success, 1 = error
+            }
+            catch
+            {
+                ret = -1;
+            }
+
+            return ret;
+
+
+        }
+        
         public string CreateRemotePresentation()
         {
             int i = this.GetNumSlides();
@@ -251,7 +281,7 @@ namespace SlideTracker
             StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
             string fullResponse = responseReader.ReadToEnd();
             webResponse.Close();
-            logWrite(fullResponse);
+            if (this.debug) { logWrite(fullResponse); }
             return fullResponse;
         }
 
