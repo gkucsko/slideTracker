@@ -138,6 +138,33 @@
 			ga('send', 'pageview');	
 		</script>
 		<!-- end google analytics code -->
-
+		
+		<!-- easter egg -->
+		<div id="badger" style="position:fixed;left:-100px;bottom:0;">
+			<img style="width:100px;" src="/images/badger.gif"/>
+		</div>
+		<script>		
+		var badger_k1 = 0;
+		var badger_k2 = 0;
+		var badger_anim = 0;
+		$(document).keydown(function (e) {
+			if (e.which == 69) {badger_k1=1;} //e
+		    if (e.which == 66) {badger_k2=1;} //b
+		    if (badger_k1 && badger_k2 && !badger_anim){
+		    	badger_anim=1;
+				$( "#badger" ).animate({
+				left: "+=100%"
+				}, 5000, function() {
+					$( "#badger" ).css("left","-100px")
+					badger_anim=0;
+				});
+		    }
+		});
+		$(document).keyup(function (e) {
+			if (e.which == 69) {badger_k1=0;} //e
+		    if (e.which == 66) {badger_k2=0;} //b
+		});
+		</script>
+		<!-- end easter egg -->
 	</body>
 </html>

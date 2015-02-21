@@ -225,9 +225,11 @@ slideTrack.controller('mainController', function ($scope, $http) {
 		var fsImgH = fsImg.clientHeight;
 		var fsWindW = $( window ).width();
 		var fsWindH = $( window ).height();
-		var bTop = ((fsWindH-fsImgH)/2+10);
-		var bRight = ((fsWindW-fsImgW)/2+10);
-		var bLeft = ((fsWindW-fsImgW)/2+10);
+		// position correctly such that buttons are within image
+		// (make sure to account for 200% background)
+		var bTop = ((fsWindH-fsImgH)/2+fsWindH/2+10);
+		var bRight = ((fsWindW-fsImgW)/2+fsWindW/2+10);
+		var bLeft = ((fsWindW-fsImgW)/2+fsWindW/2+10);
 		$('#fs-btn-track').css('top',bTop+'px');
 		$('#fs-prev-slide').css('left',bLeft+'px');
 		$('#fs-next-slide').css('right',bRight+'px');
@@ -284,12 +286,14 @@ slideTrack.controller('mainController', function ($scope, $http) {
 			if($scope.bFs){
 				$('#fs-exit').click();
 			}
+		}
 		else if(e.keyCode == 84) { // t
 			if($scope.bFs){
 				$('#fs-btn-track').click();
 			}else{
 				$('#btn-track').click();	
 			}
+		}
 	});
 		
 	// start tracking on initial load
