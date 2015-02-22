@@ -24,7 +24,7 @@ html, body {
 	margin: auto;
 	text-align: center;
 }
-.custom-header h3{
+.custom-header h1{
 	color: #AAA;
 	font-size: 24px;
 }
@@ -51,7 +51,7 @@ html, body {
 
 .sm-icon {
 	padding: 0px!important;
-	margin-right: 10px;
+	margin-left: 10px;
 	opacity: 0.4;
 }
 
@@ -439,12 +439,21 @@ content: "Example";
 
 /* very small devices */
 @media (max-width : 480px) {
-.custom-header h3{
+.custom-header{
+	padding-bottom: 0px;
+}
+.custom-header h1{
 	font-size: 20px;
 }
 .custom-header h2{
 	font-size: 22px;
 	margin: 0;
+}
+.jumbotron p.lead {
+	font-size: 20px;
+}
+#fp-download-btn {
+	margin-top: 10px;
 }
 .header {
 	padding-left:2px;
