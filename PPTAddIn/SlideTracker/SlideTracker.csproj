@@ -250,10 +250,11 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>SlideTracker_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>94369666C86C8441543D66A9C0BACDFCB5C7DC27</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>194085FB07FD27B0C5004E194CBFE7827B7141B2</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />

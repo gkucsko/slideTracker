@@ -256,6 +256,9 @@ namespace SlideTracker
                 postParameters.Add("pres", new FormUpload.FileParameter(data, presName, "application/pdf"));
                 HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL + "/" + this.pres_ID + "/presentation/",
                  this.userAgent, postParameters); //leaving out optional operation string. defaults to "POST"
+                StreamReader responseReader = new StreamReader(webResponse.GetResponseStream());
+                string fullResponse = responseReader.ReadToEnd();
+                if (this.debug) { logWrite("response to pdf upload:  " + fullResponse); }
             }
 
             string readyResp = this.MarkAsReady();
