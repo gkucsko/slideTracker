@@ -19,7 +19,7 @@ slideTrack.controller('mainController', function ($scope, $http) {
 	$scope.bFs = false;
 
 	//get requested presentation ID
-	$scope.pres_ID = url.substr(url.lastIndexOf('/') + 1);
+	$scope.pres_ID = url.substr(url.lastIndexOf('/') + 1).toLowerCase();
 
 	$scope.track = function() {
 		$scope.tracking = true;

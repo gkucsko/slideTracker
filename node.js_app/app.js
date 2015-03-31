@@ -578,9 +578,14 @@ app.get('/api-documentation', function(req, res) {
 	res.sendfile('./public/api.html');
 });
 
-// terms & privacy policy
+// privacy policy
 app.get('/privacy', function(req, res) {
 	res.sendfile('./public/privacy.html');
+});
+
+// terms
+app.get('/terms', function(req, res) {
+	res.sendfile('./public/terms.html');
 });
 
 // contact
