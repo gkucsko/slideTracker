@@ -4,7 +4,7 @@
 
 /* hide unncessary elements if production */
 .prod-hide {
- 	/*display: none!important;*/
+ 	display: none!important;
  }
 
 /* hide angular elements during load */
@@ -15,6 +15,11 @@
 /* general site */
 html, body {
     height: 100%;
+    font-family: 'Open Sans', sans-serif;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	font-family: 'Open Sans', sans-serif;
 }
 
 /* headers */
@@ -26,7 +31,8 @@ html, body {
 }
 .custom-header h1{
 	color: #AAA;
-	font-size: 24px;
+	font-size: 22px;
+	font-weight: lighter;
 }
 .header h3:hover {
 	cursor: pointer;
@@ -143,6 +149,14 @@ margin: 10px 0 10px 10px;
   font-size: 21px;
 }
 
+.jumbotron p.lead {
+	font-size: 19px;
+}
+
+#fp-download-btn {
+	margin-top: 32px;
+}
+
 /* tracking page */
 #tracking-box {
 	padding-bottom: 80px;
@@ -203,10 +217,6 @@ margin: 10px 0 10px 10px;
 
 #tracking-box #btn-track {
 	width: 100px;
-}
-
-#fp-download-btn {
-	margin-top: 31px;
 }
 
 #fs-tracking-box #fs-btn-track {
@@ -449,12 +459,6 @@ content: "Example";
 	font-size: 22px;
 	margin: 0;
 }
-.jumbotron p.lead {
-	font-size: 20px;
-}
-#fp-download-btn {
-	margin-top: 10px;
-}
 .header {
 	padding-left:2px;
 	padding-right:2px;
@@ -484,5 +488,18 @@ content: "Example";
 	width: 30px;
 	height: 60px;
 	line-height: 60px;
+}
+#fp-download-btn {
+	margin-top: 10px;
+}
+.header h3 {
+    padding-bottom: 5px;
+}
+#wrap{
+	padding-top: 5px;
+}
+.custom-header h1{
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 }
