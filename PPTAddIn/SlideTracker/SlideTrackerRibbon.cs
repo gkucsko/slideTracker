@@ -125,7 +125,8 @@ namespace SlideTracker
 
         public void OnExportButton(Office.IRibbonControl control) //export to png, make remote pres, upload it. 
         {
-            if ( Globals.ThisAddIn.CheckVersion() < 0) // -1 = no internet connection
+            //if ( Globals.ThisAddIn.CheckVersion() < 0) // -1 = no internet connection
+            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
             {
                 System.Windows.Forms.MessageBox.Show("Cannot connect to internet. Please fix connection and try again", "Connection error");
                 return;

@@ -226,6 +226,7 @@
       <SubType>Code</SubType>
     </Compile>
     <None Include="SlideTracker_TemporaryKey.pfx" />
+    <None Include="thawte_cert.pfx" />
     <None Include="ThisAddIn.Designer.xml">
       <DependentUpon>ThisAddIn.cs</DependentUpon>
     </None>
@@ -250,8 +251,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>
-    </ManifestKeyFile>
+    <ManifestKeyFile>thawte_cert.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>194085FB07FD27B0C5004E194CBFE7827B7141B2</ManifestCertificateThumbprint>
