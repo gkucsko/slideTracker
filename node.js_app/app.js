@@ -4,8 +4,16 @@
 
 var express = require('express');
 var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+
+// filesystem
+var fs = require('fs');
+
+var privateKey  = fs.readFileSync('cert/test_key.key', 'utf8');
+var certificate = fs.readFileSync('cert/test_cert.crt', 'utf8');
+var credentials = {key: privateKey, cert: certificate};
+
+var https = require('https').Server(credentials,app);
+var io = require('socket.io')(https);
 var path = require('path');
 
 // mongoDB abstraction layer
@@ -19,9 +27,6 @@ var bodyParser = require('body-parser');
 
 // simulate DELETE and PUT (express4)
 var methodOverride = require('method-override');
-
-// filesystem
-var fs = require('fs');
 
 // file uploads
 var multer = require('multer');
@@ -578,14 +583,9 @@ app.get('/api-documentation', function(req, res) {
 	res.sendfile('./public/api.html');
 });
 
-// privacy policy
+// terms & privacy policy
 app.get('/privacy', function(req, res) {
 	res.sendfile('./public/privacy.html');
-});
-
-// terms
-app.get('/terms', function(req, res) {
-	res.sendfile('./public/terms.html');
 });
 
 // contact
@@ -711,7 +711,22 @@ socket.on('disconnect', function() {
 });
 });
 
-http.listen(app.get('port'), function() {
+
+https.listen(app.get('port'), function() {
 	console.log('Express server listening on port ' + app.get('port'));
 });
+
+// http redirect
+var app2 = express();
+var http = require('http').Server(app2);
+
+// set up a route to redirect http to https
+app2.get('*',function(req,res){  
+	//res.redirect('https://www.slidetracker.org'+req.url)
+    //res.redirect('https://dev.slidetracker.org'+req.url)
+    res.redirect('https://localhost:3000'+req.url)
+})
+
+// have it listen on 8080
+http.listen(8080);
 

@@ -322,6 +322,9 @@ $RECYCLE.BIN/
 *.jpeg
 *.pdf
 
+# Ignore certificate files
+node.js_app/cert
+
 # Ignore paths that contain user-generated content.
 node.js_app/node_modules
 node.js_app/uploads
