@@ -9,6 +9,7 @@ using System.Net; //for HTTPWebRequest
 using System.IO; //for Stream
 using System.Drawing;
 using System.Net.NetworkInformation;
+using System.Threading;
 
 namespace SlideTracker
 {
@@ -16,8 +17,8 @@ namespace SlideTracker
     {
         public string SlideDir = @"C:\"; //won't get used. assigned a random temp directory upon exporting
         public string fmt = "png"; //export the slides to
-        //public string postURL = "http://www.slidetracker.org/api/v1/presentations"; // production server
-        public string postURL ="http://dev.slidetracker.org/api/v1/presentations";//"http://54.208.192.158/api/v1/presentations"; //dev server
+        public string postURL = "https://www.slidetracker.org/api/v1/presentations"; // production server
+        //public string postURL ="https://dev.slidetracker.org/api/v1/presentations";//"http://54.208.192.158/api/v1/presentations"; //dev server
         private string userAgent = ""; //not really used. could be anything. for future development
         public string privateHash = "foobar"; //will get set when creating remote pres
         public string pres_ID = "123"; //will be overwritten by info from server
@@ -212,11 +213,12 @@ namespace SlideTracker
             if (this.debug) { logWrite("total file sizes = " + totalSize + "status = " + allGood); }
             return allGood;
         }
-        
+
         public string UploadRemotePresentation()
         {
             //upload all slides and, if allowed pdf presentation to server
             int count = 1;
+            int tot = GetNumSlides();
             string[] files = System.IO.Directory.GetFiles(this.SlideDir, "*." + this.fmt);
             for (int fileInd = 0; fileInd < files.Length; fileInd++)
             {
@@ -243,6 +245,18 @@ namespace SlideTracker
                     logWrite("uploaded " + file + " response = " + resp);
                 }
                 count++;
+                SlideTrackerRibbon.tForm.FormRefresh();
+                if (SlideTrackerRibbon.tForm.cancelledForm)
+                {
+                    this.uploadSuccess = false;
+                    return "Operation cancelled by user";
+                }
+                SlideTrackerRibbon.tForm.UpdateProgressBar();
+                SlideTrackerRibbon.tForm.ChangeLabelText("SlideTracker:" + System.Environment.NewLine +  
+                    "uploaded: " + (count-1) + " of " + tot + "slides");
+                SlideTrackerRibbon.tForm.Show();
+                SlideTrackerRibbon.tForm.TopMost = true;
+                SlideTrackerRibbon.tForm.Activate();
             }
             //upload pdf if wanted
             if (this.allowDownload) //gets set in ribbon

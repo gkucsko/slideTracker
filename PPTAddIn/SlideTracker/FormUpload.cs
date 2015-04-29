@@ -12,7 +12,7 @@ namespace SlideTracker
     public static class FormUpload
     {
         private static readonly Encoding encoding = Encoding.UTF8;
-        public static readonly int maxAttempts = 3; //how many times to try to connect
+        public static readonly int maxAttempts = 1; //how many times to try to connect
         public static HttpWebResponse MultipartFormDataPost(string postUrl, string userAgent, Dictionary<string, object> postParameters, string operation = "POST")
         {
             postParameters.Add("key", "N3sN7AiWTFK9XNwSCn7um35joV6OFslL"); //add key to all forms
@@ -44,7 +44,9 @@ namespace SlideTracker
                     request.UserAgent = userAgent;
                     request.CookieContainer = new CookieContainer();
                     request.ContentLength = formData.Length;
-                    request.Timeout = 3000; //in ms
+                    request.Timeout = 20000; //in ms
+                    //DANGER: next line will trust every website! Needed for self-signed SSL certificate
+                    //System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true;  };
 
                     // You could add authentication here as well if needed:
                     // request.PreAuthenticate = true;
