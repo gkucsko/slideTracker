@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Office = Microsoft.Office.Core;
 using PPT = Microsoft.Office.Interop.PowerPoint;
+using System.ComponentModel;
 
 // TODO:  Follow these steps to enable the Ribbon (XML) item:
 
@@ -33,12 +34,13 @@ namespace SlideTracker
     public class SlideTrackerRibbon : Office.IRibbonExtensibility
     {
         bool startup = false; // starts as false. after initializing will be true. for setting default options
-        bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
-        bool displayOptionsGroup = false; //is the options group displayed
-        private bool showRibbon = true; //should the ribbon be shown at all
+        public bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
+        public bool displayOptionsGroup = false; //is the options group displayed
+        public bool showRibbon = true; //should the ribbon be shown at all
         private Office.IRibbonUI ribbon; //the ribbon object
         internal static Office.IRibbonUI ribbon1; //for access from other functions
-        private System.Windows.Forms.Form successForm; //form to notify success
+        //private System.Windows.Forms.Form successForm; //form to notify success
+        public static TrackerForm tForm; // one trackerForm ribbon for the ribbon
         public SlideTrackerRibbon()
         {
         }
@@ -69,6 +71,8 @@ namespace SlideTracker
             }
             this.ribbon = ribbonUI;
             ribbon1 = ribbonUI; // to expose this to globals.ribbons
+            Globals.ThisAddIn.ribbon = this;
+
         }
 
         #region visibility helpers
@@ -125,29 +129,35 @@ namespace SlideTracker
 
         public void OnExportButton(Office.IRibbonControl control) //export to png, make remote pres, upload it. 
         {
-            //if ( Globals.ThisAddIn.CheckVersion() < 0) // -1 = no internet connection
+            // first check to see that presentation isn't read only and that there is one that is active
+            Office.MsoTriState state = Office.MsoTriState.msoTrue;
+            try
+            {
+                state = Globals.ThisAddIn.Application.ActivePresentation.ReadOnly;
+            }
+            catch {}
+            if (state != Office.MsoTriState.msoFalse)
+            {
+                System.Windows.Forms.MessageBox.Show("Current Presentation is Read only. Please enable editing to proceed with SlideTracker", "Permission Error");
+                return;
+            }
+            tForm = new TrackerForm();
+            tForm.SetOKVisible(false);
+            tForm.SetCancelVisible(true);
+            //now check network connection
             if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
             {
                 System.Windows.Forms.MessageBox.Show("Cannot connect to internet. Please fix connection and try again", "Connection error");
                 return;
             }
             Globals.ThisAddIn.uploadSuccess = true;
-            int pad = 10;
-            System.Windows.Forms.Form progressForm = new System.Windows.Forms.Form();
-            progressForm.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            System.Windows.Forms.Label lab = new System.Windows.Forms.Label();
-            progressForm.AutoSize = true; // progressForm.Size = new System.Drawing.Size(450, 150); 
-            lab.AutoSize = true; //lab.Width = progressForm.Width - 4 * pad;
-            progressForm.Text = "Upload Progress";            
-            lab.Top = pad;
-            lab.Left = pad;
-            lab.Text = "Exporting files to " + Globals.ThisAddIn.fmt;
-            lab.Font = new System.Drawing.Font("Arial", 12);
-            progressForm.Controls.Add(lab);
-            progressForm.Show();
-            progressForm.Update();
+            tForm.ChangeLabelText("Exporting Files to " + Globals.ThisAddIn.fmt);
+            tForm.InitProgressBar(Globals.ThisAddIn.GetNumSlides());
+            tForm.Show();
+
             Globals.ThisAddIn.MakeLUT();
             Globals.ThisAddIn.Application.ActivePresentation.Export(Globals.ThisAddIn.SlideDir, Globals.ThisAddIn.fmt);
+            SlideTrackerRibbon.tForm.Focus();
             Globals.ThisAddIn.DeleteHiddenSlides();
             if (Globals.ThisAddIn.allowDownload)
             {
@@ -156,23 +166,22 @@ namespace SlideTracker
             }
             try
             {
-                lab.Text = "Contacting server... This may take a moment.";
                 if (!Globals.ThisAddIn.CheckFileRequirements())
                 {
+                    tForm.ChangeLabelText("Sorry, total file size too big for slideTracker.");
                     Globals.ThisAddIn.uploadSuccess = false;
-                    System.Windows.Forms.MessageBox.Show("Sorry, total file size too big for slideTracker.");
+                    //System.Windows.Forms.MessageBox.Show("Sorry, total file size too big for slideTracker.");
                     return;
                 }
 
                 string resp = Globals.ThisAddIn.CreateRemotePresentation();
-                lab.Text = "uploading remote presentation...";
-                progressForm.Update();
+                tForm.ChangeLabelText("uploading remote presentation...");
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
-                progressForm.Close();
 
-                DisplaySuccessform();
-
-                displayStopButton = true;
+                //FIXME: the next if statement will essentially always return true;
+                // need to find a way to make it wait for background worker to finish
+                // for now, HACK: worker will just change ribbon itself if cancelled/error
+                if (!tForm.cancelledForm && Globals.ThisAddIn.uploadSuccess) { displayStopButton = true; }
                 UpdateDisplay();
             }
             catch (Exception e)
@@ -180,68 +189,10 @@ namespace SlideTracker
                 if (Globals.ThisAddIn.debug) { Globals.ThisAddIn.logWrite(e.ToString()); }
                 Globals.ThisAddIn.uploadSuccess = false;
                 System.Windows.Forms.MessageBox.Show("Problem communicating with server. Check internet connection and try again");
-            }
-            finally
-            {
-                if (!progressForm.IsDisposed) { progressForm.Close(); }
+                tForm.done = true;
             }
 
         }
-
-        private void DisplaySuccessform() // format and display the form indicating upload success
-        {
-            System.Windows.Forms.Form successForm = new System.Windows.Forms.Form();
-            this.successForm = successForm;
-            successForm.Width = 450;
-            successForm.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            //successForm.Size = new System.Drawing.Size(550, 300); //450 180
-            successForm.Icon = new System.Drawing.Icon(System.Drawing.SystemIcons.Information, 60, 60);
-
-            int pad = 10;
-            System.Drawing.Font myFont = new System.Drawing.Font("Arial", 11);
-            
-            System.Windows.Forms.Label textLabel = new System.Windows.Forms.Label();
-            textLabel.Text = "ALL DONE!" + System.Environment.NewLine +
-                "Just start presenting as usual. The audience will see the tracking ID on your slides.";
-            textLabel.Width = successForm.Width - 4*pad;
-            textLabel.Left =(successForm.Width - textLabel.Width) / 2;
-            textLabel.Top = pad;
-            textLabel.Height = 100;
-            textLabel.Font = myFont;
-
-            System.Windows.Forms.LinkLabel linkLabel = new System.Windows.Forms.LinkLabel();
-            linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(LinkClicked);
-            linkLabel.Text = Globals.ThisAddIn.GetLinkURL();
-            linkLabel.VisitedLinkColor = System.Drawing.Color.Blue;
-            linkLabel.LinkColor = System.Drawing.Color.Navy;
-            linkLabel.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-            linkLabel.Font = myFont;
-            linkLabel.Width = successForm.Width - 4 * pad;
-            linkLabel.Height = textLabel.Height;
-            //linkLabel.Size = new System.Drawing.Size(340, 80);
-            linkLabel.Top = textLabel.Height + pad;
-            linkLabel.Left = (successForm.Width - linkLabel.Width) / 2;
-            linkLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-
-            System.Windows.Forms.Button okButton = new System.Windows.Forms.Button();
-            okButton.Size = new System.Drawing.Size(90, 40);
-            okButton.Text = "OK";
-            okButton.Font = myFont;
-            okButton.Left = (successForm.Width - okButton.Width) / 2;
-            okButton.Top = -pad + 3 * (successForm.Height - okButton.Height) / 4;
-            okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            okButton.Click += new EventHandler(CloseSuccessForm);
-
-            successForm.Controls.Add(textLabel);
-            successForm.Controls.Add(okButton);
-            successForm.Controls.Add(linkLabel);
-            Globals.ThisAddIn.broadcastPresentationName = Globals.ThisAddIn.Application.ActivePresentation.Name;
-            successForm.Text = "Success: " + Globals.ThisAddIn.broadcastPresentationName;
-
-            successForm.Show();
-        }
-
-        private void CloseSuccessForm(object sender, EventArgs e) { this.successForm.Close(); }
 
         public void OnStopBroadcast(Office.IRibbonControl control)
         {
@@ -265,7 +216,7 @@ namespace SlideTracker
             Globals.ThisAddIn.maxClients = 0;
         }
 
-        private void UpdateDisplay() //update the controls that may get changed
+        public void UpdateDisplay() //update the controls that may get changed
         {
             this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
             this.ribbon.InvalidateControl("StopBroadcast"); //update display
@@ -345,9 +296,16 @@ namespace SlideTracker
             else
             {
                 startup = true;
+                //System.Runtime.InteropServices.COMException
                 //terrible hack to hard code the corret values at startup
-                float width = Globals.ThisAddIn.Application.ActivePresentation.PageSetup.SlideWidth - (float)Globals.ThisAddIn.width;
-                float height = Globals.ThisAddIn.Application.ActivePresentation.PageSetup.SlideHeight - (float)Globals.ThisAddIn.height;
+                float width = 400;
+                float height = 200;
+                try
+                {
+                    width = Globals.ThisAddIn.Application.ActivePresentation.PageSetup.SlideWidth - (float)Globals.ThisAddIn.width;
+                    height = Globals.ThisAddIn.Application.ActivePresentation.PageSetup.SlideHeight - (float)Globals.ThisAddIn.height;
+                }
+                catch (System.Runtime.InteropServices.COMException) { }
                 float offset = 8;
                 Globals.ThisAddIn.left = width - offset;
                 Globals.ThisAddIn.top = offset;
