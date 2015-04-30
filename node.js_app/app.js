@@ -8,8 +8,8 @@ var app = express();
 // filesystem
 var fs = require('fs');
 
-var privateKey  = fs.readFileSync('cert/test_key.key', 'utf8');
-var certificate = fs.readFileSync('cert/test_cert.crt', 'utf8');
+var privateKey  = fs.readFileSync('../SSL_cert/test_key.key', 'utf8');
+var certificate = fs.readFileSync('../SSL_cert/test_cert.crt', 'utf8');
 var credentials = {key: privateKey, cert: certificate};
 
 var https = require('https').Server(credentials,app);
