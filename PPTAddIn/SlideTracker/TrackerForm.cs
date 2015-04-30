@@ -22,6 +22,18 @@ namespace SlideTracker
             this.label1.AutoSize = true;
         }
 
+        public void SetOKVisible(bool state)
+        {
+            this.OK_button.Visible = state;
+            this.FormRefresh();
+        }
+
+        public void SetCancelVisible(bool state)
+        {
+            this.cancel_button.Visible = state;
+            this.FormRefresh();
+        }
+
         private void OK_button_Click(object sender, EventArgs e)
         {
             if (this.done) { this.Close(); }
@@ -29,11 +41,9 @@ namespace SlideTracker
 
         private void cancel_button_Click(object sender, EventArgs e)
         {
+            Globals.ThisAddIn.bw.CancelAsync();
             this.cancelledForm = true;
             this.Focus();
-            this.TopMost = true;
-            this.Refresh();
-            System.Windows.Forms.MessageBox.Show("cancelled");
         }
 
         public void ChangeLabelText(string text)
@@ -48,17 +58,25 @@ namespace SlideTracker
             this.progressBar.Step = 1;
         }
 
-        public void UpdateProgressBar()
+        public void UpdateProgressBar(int val)
         { 
-            this.progressBar.PerformStep();
+            if (val <= this.progressBar.Maximum)
+            {
+                this.progressBar.Value = val;
+            }
+            else
+            {
+                this.progressBar.Value = val;
+            }
+            this.ChangeLabelText("Uploaded " + val + " of " + this.progressBar.Maximum + " slides");
             this.FormRefresh();
         }
 
         public void FormRefresh()
         {
-            this.Focus();
-            this.TopMost = true;
-            this.Refresh();
+            //this.Focus();
+            //this.TopMost = true;
+            //this.Refresh();
         }
 
         public void DisplayLinkLabel(string text)
@@ -66,7 +84,6 @@ namespace SlideTracker
             this.linkLabel1.Text = text;
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(LinkClicked);
             this.linkLabel1.VisitedLinkColor = System.Drawing.Color.Blue;
-            //this.linkLabel1.LinkColor = System.Drawing.Color.Navy;
             this.linkLabel1.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
             this.linkLabel1.Visible = true;
         }

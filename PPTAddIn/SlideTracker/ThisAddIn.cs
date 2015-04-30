@@ -10,6 +10,7 @@ using System.IO; //for Stream
 using System.Drawing;
 using System.Net.NetworkInformation;
 using System.Threading;
+using System.ComponentModel;
 
 namespace SlideTracker
 {
@@ -38,6 +39,8 @@ namespace SlideTracker
         public int maxClients = 0; //max number of viewers ever
         private int[] slideLUT; //lookup table of which slide to go to in presentation (for skipping hidden slides)
         public string broadcastPresentationName = null; // gets set to name of presentation when uploaded
+        public BackgroundWorker bw; // background worker to upload slides
+        public SlideTrackerRibbon ribbon; // reference to the ribbon
 
         #region Slide Show Functions
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
@@ -169,7 +172,6 @@ namespace SlideTracker
             postParameters.Add("creator", this.userName);
             postParameters.Add("n_slides", "" + this.GetNumSlides());
             if (this.debug) { logWrite("non hidden slides = " + this.GetNumSlides()); }
-            //postParameters.Add("n_slides", "" + Globals.ThisAddIn.Application.ActivePresentation.Slides.Range().Count);
             //leaving out optional operation string in MultipartForDataPost. default operation = "POST"
             HttpWebResponse webResponse = FormUpload.MultipartFormDataPost(this.postURL, this.userAgent, postParameters);
 
@@ -217,24 +219,82 @@ namespace SlideTracker
         public string UploadRemotePresentation()
         {
             //upload all slides and, if allowed pdf presentation to server
+            
+            this.bw = new BackgroundWorker();
+            this.bw.WorkerReportsProgress = true;
+            this.bw.WorkerSupportsCancellation = true;
+            this.bw.DoWork += new DoWorkEventHandler(bw_DoUploadWork);
+            this.bw.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
+            this.bw.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bw_RunWorkerCompleted);
+
+            this.bw.RunWorkerAsync();
+            return "done uploading files";
+        }
+
+        void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if ((e.Cancelled == true))
+            {
+                SlideTrackerRibbon.tForm.ChangeLabelText("cancelling...");
+                this.uploadSuccess = false;
+                try { DeleteRemotePresentation(); }
+                catch { }
+                SlideTrackerRibbon.tForm.Close();
+                this.ribbon.displayStopButton = false;
+                this.ribbon.UpdateDisplay();
+            }
+
+            else if (!(e.Error == null))
+            {
+                SlideTrackerRibbon.tForm.ChangeLabelText("Error detected...");
+                this.uploadSuccess = false;
+                try{DeleteRemotePresentation();}
+                catch { }
+                SlideTrackerRibbon.tForm.Close();
+                this.ribbon.displayStopButton = false;
+                this.ribbon.UpdateDisplay();
+            }
+            else //  Everything worked! Hooray!
+            {
+                SlideTrackerRibbon.tForm.SetCancelVisible(false);
+                SlideTrackerRibbon.tForm.SetOKVisible(true);
+                SlideTrackerRibbon.tForm.done = true;
+                SlideTrackerRibbon.tForm.DisplayLinkLabel(Globals.ThisAddIn.GetLinkURL());
+                SlideTrackerRibbon.tForm.ChangeLabelText("ALL DONE!" + System.Environment.NewLine +
+                    "Just start presenting as usual. The audience will see the tracking ID on your slides.");
+            }
+        }
+
+        void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            SlideTrackerRibbon.tForm.UpdateProgressBar(e.ProgressPercentage);
+        }
+
+        void bw_DoUploadWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
             int count = 1;
             int tot = GetNumSlides();
             string[] files = System.IO.Directory.GetFiles(this.SlideDir, "*." + this.fmt);
             for (int fileInd = 0; fileInd < files.Length; fileInd++)
             {
+                if (worker.CancellationPending == true)
+                {
+                    e.Cancel = true;
+                    break;
+                }
                 string file = new FileInfo(files[fileInd]).Name;
                 string sldNum = System.Text.RegularExpressions.Regex.Match(file, @"\d+").Value;
                 string resp;
-                if (this.slideLUT[int.Parse(sldNum)-1]>=0)
+                if (this.slideLUT[int.Parse(sldNum) - 1] >= 0)
                 {
-                    resp = UploadRemoteSlide(this.slideLUT[int.Parse(sldNum)-1], file);
+                    resp = UploadRemoteSlide(this.slideLUT[int.Parse(sldNum) - 1], file);
                 }
                 else
                 {
                     resp = "";
-                    logWrite("slide " + sldNum + "not found in LUT: " + this.slideLUT[int.Parse(sldNum)-1]);
+                    logWrite("slide " + sldNum + "not found in LUT: " + this.slideLUT[int.Parse(sldNum) - 1]);
                 }
-                //string resp = UploadRemoteSlide(int.Parse(sldNum), file);
                 if (String.Compare(resp, "\"upload succeeded!\"") < 0)
                 {
                     this.uploadSuccess = false;
@@ -246,17 +306,7 @@ namespace SlideTracker
                 }
                 count++;
                 SlideTrackerRibbon.tForm.FormRefresh();
-                if (SlideTrackerRibbon.tForm.cancelledForm)
-                {
-                    this.uploadSuccess = false;
-                    return "Operation cancelled by user";
-                }
-                SlideTrackerRibbon.tForm.UpdateProgressBar();
-                SlideTrackerRibbon.tForm.ChangeLabelText("SlideTracker:" + System.Environment.NewLine +  
-                    "uploaded: " + (count-1) + " of " + tot + "slides");
-                SlideTrackerRibbon.tForm.Show();
-                SlideTrackerRibbon.tForm.TopMost = true;
-                SlideTrackerRibbon.tForm.Activate();
+                this.bw.ReportProgress(count-1);
             }
             //upload pdf if wanted
             if (this.allowDownload) //gets set in ribbon
@@ -277,7 +327,6 @@ namespace SlideTracker
 
             string readyResp = this.MarkAsReady();
             if (this.debug) { logWrite(readyResp); }
-            return "done uploading files";
         }
 
         private string UploadRemoteSlide(int slide_ID, string fileName)

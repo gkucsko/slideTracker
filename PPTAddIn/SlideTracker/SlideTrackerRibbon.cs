@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Office = Microsoft.Office.Core;
 using PPT = Microsoft.Office.Interop.PowerPoint;
+using System.ComponentModel;
 
 // TODO:  Follow these steps to enable the Ribbon (XML) item:
 
@@ -33,13 +34,13 @@ namespace SlideTracker
     public class SlideTrackerRibbon : Office.IRibbonExtensibility
     {
         bool startup = false; // starts as false. after initializing will be true. for setting default options
-        bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
-        bool displayOptionsGroup = false; //is the options group displayed
-        private bool showRibbon = true; //should the ribbon be shown at all
+        public bool displayStopButton = false; //should we display the stop button (true) or broadcast button (false)
+        public bool displayOptionsGroup = false; //is the options group displayed
+        public bool showRibbon = true; //should the ribbon be shown at all
         private Office.IRibbonUI ribbon; //the ribbon object
         internal static Office.IRibbonUI ribbon1; //for access from other functions
         //private System.Windows.Forms.Form successForm; //form to notify success
-        public static TrackerForm tForm;
+        public static TrackerForm tForm; // one trackerForm ribbon for the ribbon
         public SlideTrackerRibbon()
         {
         }
@@ -70,6 +71,7 @@ namespace SlideTracker
             }
             this.ribbon = ribbonUI;
             ribbon1 = ribbonUI; // to expose this to globals.ribbons
+            Globals.ThisAddIn.ribbon = this;
 
         }
 
@@ -127,6 +129,7 @@ namespace SlideTracker
 
         public void OnExportButton(Office.IRibbonControl control) //export to png, make remote pres, upload it. 
         {
+            // first check to see that presentation isn't read only and that there is one that is active
             Office.MsoTriState state = Office.MsoTriState.msoTrue;
             try
             {
@@ -139,7 +142,9 @@ namespace SlideTracker
                 return;
             }
             tForm = new TrackerForm();
-            //if ( Globals.ThisAddIn.CheckVersion() < 0) // -1 = no internet connection
+            tForm.SetOKVisible(false);
+            tForm.SetCancelVisible(true);
+            //now check network connection
             if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
             {
                 System.Windows.Forms.MessageBox.Show("Cannot connect to internet. Please fix connection and try again", "Connection error");
@@ -152,6 +157,7 @@ namespace SlideTracker
 
             Globals.ThisAddIn.MakeLUT();
             Globals.ThisAddIn.Application.ActivePresentation.Export(Globals.ThisAddIn.SlideDir, Globals.ThisAddIn.fmt);
+            SlideTrackerRibbon.tForm.Focus();
             Globals.ThisAddIn.DeleteHiddenSlides();
             if (Globals.ThisAddIn.allowDownload)
             {
@@ -164,7 +170,7 @@ namespace SlideTracker
                 {
                     tForm.ChangeLabelText("Sorry, total file size too big for slideTracker.");
                     Globals.ThisAddIn.uploadSuccess = false;
-                    System.Windows.Forms.MessageBox.Show("Sorry, total file size too big for slideTracker.");
+                    //System.Windows.Forms.MessageBox.Show("Sorry, total file size too big for slideTracker.");
                     return;
                 }
 
@@ -172,13 +178,10 @@ namespace SlideTracker
                 tForm.ChangeLabelText("uploading remote presentation...");
                 string resp2 = Globals.ThisAddIn.UploadRemotePresentation();
 
-                tForm.done = true;
-                //tForm.ChangeLabelText("Success: " + Globals.ThisAddIn.broadcastPresentationName);
-                tForm.ChangeLabelText("ALL DONE!" + System.Environment.NewLine +
-                    "Just start presenting as usual. The audience will see the tracking ID on your slides.");
-                tForm.DisplayLinkLabel(Globals.ThisAddIn.GetLinkURL());
-
-                displayStopButton = true;
+                //FIXME: the next if statement will essentially always return true;
+                // need to find a way to make it wait for background worker to finish
+                // for now, HACK: worker will just change ribbon itself if cancelled/error
+                if (!tForm.cancelledForm && Globals.ThisAddIn.uploadSuccess) { displayStopButton = true; }
                 UpdateDisplay();
             }
             catch (Exception e)
@@ -188,14 +191,8 @@ namespace SlideTracker
                 System.Windows.Forms.MessageBox.Show("Problem communicating with server. Check internet connection and try again");
                 tForm.done = true;
             }
-            finally
-            {
-                //if (!tForm.IsDisposed) { tForm.Close(); }
-            }
 
         }
-
-        private void CloseSuccessForm(object sender, EventArgs e) { } //this.successForm.Close(); }
 
         public void OnStopBroadcast(Office.IRibbonControl control)
         {
@@ -219,7 +216,7 @@ namespace SlideTracker
             Globals.ThisAddIn.maxClients = 0;
         }
 
-        private void UpdateDisplay() //update the controls that may get changed
+        public void UpdateDisplay() //update the controls that may get changed
         {
             this.ribbon.InvalidateControl("BroadcastButton"); //updates the display for this control
             this.ribbon.InvalidateControl("StopBroadcast"); //update display
