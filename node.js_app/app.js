@@ -8,9 +8,11 @@ var app = express();
 // filesystem
 var fs = require('fs');
 
-var privateKey  = fs.readFileSync('../SSL_cert/test_key.key', 'utf8');
-var certificate = fs.readFileSync('../SSL_cert/test_cert.crt', 'utf8');
+var privateKey  = fs.readFileSync('../SSL_cert/slidetracker.key', 'utf8');
+var certificate = fs.readFileSync('../SSL_cert/slidetracker.crt', 'utf8');
+// var bundle = fs.readFileSync('../SSL_cert/gd_bundle.crt', 'utf8');
 var credentials = {key: privateKey, cert: certificate};
+// var credentials = {key: privateKey, cert: certificate, ca: [bundle]};
 
 var https = require('https').Server(credentials,app);
 var io = require('socket.io')(https);
@@ -574,7 +576,7 @@ app.get('/download', function(req, res) {
 });
 
 app.get('/download/slideTracker', function(req, res) {
-	var file = './public/files/slideTracker_0_1_0_0.zip';
+	var file = './public/files/slideTracker_0_1_1_0.zip';
 	res.download(file);
 });
 
