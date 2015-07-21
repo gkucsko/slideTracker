@@ -99,23 +99,7 @@
 		<script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
     	<script src="/core.js"></script>
 
-		<script>
-			$("#submit-code").click(function() {
-				var code = $("#fp-code-input input").val();
-				if (code) {window.location.href = "/track/"+code;} else {$("#fp-code-input input").focus()}
-			});
-			//make sure enter submits form
-			$('#fp-code-input input').bind("enterKey",function(e){
-				var code = $("#fp-code-input input").val();
-				if (code) {window.location.href = "/track/"+code;} else {$("#fp-code-input input").focus()}
-			});
-			$('#fp-code-input input').keyup(function(e){
-			    if(e.keyCode == 13)
-			    {
-			        $(this).trigger("enterKey");
-			    }
-			});
-						
+		<script>			
 			// make fullscreen controls vanish on 2s inactivity
 			var t_controls = null;
 			var isHovered = null;

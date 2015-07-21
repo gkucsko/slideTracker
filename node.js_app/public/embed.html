@@ -1,0 +1,102 @@
+<!-- index.html -->
+<!doctype html>
+
+<!-- ASSIGN OUR ANGULAR MODULE -->
+<html ng-app="slideTrack">
+	<head>
+		<!-- META -->
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- Optimize mobile viewport -->
+
+		<title>Tracking Presentation</title>
+
+		<!-- SCROLLS -->
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="/stylesheets/embed.css">
+
+	</head>
+
+	<!-- SET THE CONTROLLER -->
+	<body ng-controller="mainController">
+		<div id="wrap">
+			<div class="container">
+				<div id="tracking-box">
+					<div class="slide-box">
+						<img ng-cloak alt="" ng-src="{{slide_src}}"/>									
+					</div>
+					<div ng-cloak class="alt-text">{{slide_alt_text}}</div>
+          <div class='slide-nav-btns'>
+            <a class="pull-left powered-by" href="https://www.slidetracker.org" target="_blank">
+              <img src="/images/st.png" />
+            </a>
+            <button type="submit" id="prev-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="previous()"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
+            <button type="submit" id='btn-track' class="btn btn-primary btn-med" disabled="disabled" ng-click="track()">done</button>
+            <button type="submit" id="next-slide" class="btn btn-primary btn-med" disabled="disabled" ng-click="next()"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
+            <span class="pull-right">
+              <strong class="slide-nr">{{cur_slide}}/{{presentation.n_slides}}</strong>
+              <a href="#" type="button" id="download-pres" class="btn btn-primary btn-med">
+                <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span>
+              </a>
+  						<button type="submit" disabled="disabled" id="fs-btn" class="btn btn-primary btn-med" ng-click="fullscreen()">
+  							<span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+  						</button>
+						</span>
+					</div>
+				</div>
+				<div id="fs-tracking-box">
+					<span class="slide-box">
+						<button type="submit" id="fs-prev-slide" class="fs-btn" ng-click="previous()"><</button>
+						<button type="submit" id='fs-btn-track' class="fs-btn" ng-click="track()">done</button>
+						<button type="submit" id="fs-next-slide" class="fs-btn" ng-click="next()">></button>
+						<button type="submit" id="fs-exit" class="fs-btn" ng-click="fs_exit()"><span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></button>
+						<img ng-cloak id="fs-img" alt="" ng-src="{{slide_src}}"/>										
+					</span>
+				</div>
+				<div id='pres-not-found'>
+					<h3>presentation ID not found...</h3>
+					<div class="form-group" id="fp-code-input">
+						<input type="text" class="form-control input-lg"></input>
+					</div>
+					<div class="btn btn-lg btn-success" id="submit-code">Track</div>
+          <a class="powered-by" href="https://www.slidetracker.org" target="_blank">
+            <img src="/images/st.png" />
+          </a>
+				</div>	
+			</div><!-- /container -->
+		</div>	<!-- /wrap -->
+
+		<!-- SPELLS -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script><!-- load jquery -->
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script><!-- load angular -->
+		<script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
+    <script src="/embed.js"></script>
+
+		<script>			
+			// make fullscreen controls vanish on 2s inactivity
+			var t_controls = null;
+			var isHovered = null;
+			$("#fs-tracking-box").mousemove(function() {
+				clearTimeout(t_controls);
+				$("#fs-tracking-box .fs-btn").css('display','');
+				t_controls = setTimeout('$("#fs-tracking-box .fs-btn").fadeOut();', 2000);
+			}).mouseleave(function() {
+				clearTimeout(t_controls);
+				$("#fs-tracking-box .fs-btn").fadeOut();  
+			});
+		</script>
+	
+		<!-- google analytics code -->
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');	
+			ga('create', 'UA-59197798-1', 'auto');
+			ga('send', 'pageview');	
+		</script>
+		<!-- end google analytics code -->
+
+	</body>
+</html>

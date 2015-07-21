@@ -564,8 +564,14 @@ app.get('/api/v1/presentations/verify', function(req, res) {
 		res.status(200);
 });
 
+// presentation tracking
 app.get('/track/:pres_ID', function(req, res) {
 	res.sendfile('./public/track.html');
+});
+
+// iframe tracking
+app.get('/embed/:pres_ID', function(req, res) {
+  res.sendfile('./public/embed.html');
 });
 
 // download presentation tool
