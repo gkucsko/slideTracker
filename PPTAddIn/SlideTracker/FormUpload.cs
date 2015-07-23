@@ -46,7 +46,7 @@ namespace SlideTracker
                     request.ContentLength = formData.Length;
                     request.Timeout = 20000; //in ms
                     //DANGER: next line will trust every website! Needed for self-signed SSL certificate
-                    //System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true;  };
+                    System.Net.ServicePointManager.ServerCertificateValidationCallback = delegate { return true;  };
 
                     // You could add authentication here as well if needed:
                     // request.PreAuthenticate = true;

@@ -156,7 +156,23 @@ namespace SlideTracker
             tForm.Show();
 
             Globals.ThisAddIn.MakeLUT();
-            Globals.ThisAddIn.Application.ActivePresentation.Export(Globals.ThisAddIn.SlideDir, Globals.ThisAddIn.fmt);
+            try
+            {
+                Globals.ThisAddIn.Application.ActivePresentation.Export(Globals.ThisAddIn.SlideDir, Globals.ThisAddIn.fmt);
+            }
+            catch (Exception e)
+            {
+                if (Globals.ThisAddIn.debug) { Globals.ThisAddIn.logWrite(e.ToString()); }
+                Globals.ThisAddIn.uploadSuccess = false;
+                //System.Windows.Forms.MessageBox.Show("Problem communicating with server. Check internet connection and try again");
+                tForm.done = true;
+                tForm.cancelledForm = true;
+                displayStopButton = false;
+                UpdateDisplay();
+                tForm.Close();
+                return;
+            }
+            
             SlideTrackerRibbon.tForm.Focus();
             Globals.ThisAddIn.DeleteHiddenSlides();
             if (Globals.ThisAddIn.allowDownload)

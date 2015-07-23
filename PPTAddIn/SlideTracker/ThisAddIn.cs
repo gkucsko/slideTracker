@@ -18,8 +18,8 @@ namespace SlideTracker
     {
         public string SlideDir = @"C:\"; //won't get used. assigned a random temp directory upon exporting
         public string fmt = "png"; //export the slides to
-        public string postURL = "https://www.slidetracker.org/api/v1/presentations"; // production server
-        //public string postURL ="https://dev.slidetracker.org/api/v1/presentations";//"http://54.208.192.158/api/v1/presentations"; //dev server
+        //public string postURL = "https://www.slidetracker.org/api/v1/presentations"; // production server
+        public string postURL ="https://dev.slidetracker.org/api/v1/presentations";//"http://54.208.192.158/api/v1/presentations"; //dev server
         private string userAgent = ""; //not really used. could be anything. for future development
         public string privateHash = "foobar"; //will get set when creating remote pres
         public string pres_ID = "123"; //will be overwritten by info from server
@@ -28,7 +28,7 @@ namespace SlideTracker
         private string[] rectangleIds; //for box behind text
         public bool showOnAll = true; //show banner on all slides? first slide?
         public bool allowDownload = false;// allow others to download pdf from website
-        public bool debug = true; //write stuff to log file
+        public bool debug = false; //write stuff to log file
         public float left = 0; // points away from left edge of slide for IP text box
         public float top = 0; // points away from top edge of slide for IP text box
         public float width = 90; // width in points of text box
@@ -41,6 +41,8 @@ namespace SlideTracker
         public string broadcastPresentationName = null; // gets set to name of presentation when uploaded
         public BackgroundWorker bw; // background worker to upload slides
         public SlideTrackerRibbon ribbon; // reference to the ribbon
+        public int maxFileSizeMB = 50;
+        public int maxSlideSizeMB = 5;
 
         #region Slide Show Functions
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
@@ -199,19 +201,19 @@ namespace SlideTracker
             {
                 FileInfo fi = new FileInfo(files[i]);
                 totalSize += fi.Length;
-                if (fi.Length > 2000000)
+                if (fi.Length > 1000000*this.maxSlideSizeMB)
                 {
                     allGood = false;
                     break;
                 }
             }
-            if (totalSize > 20000000) { allGood = false; }
+            if (totalSize > 1000000*this.maxFileSizeMB) { allGood = false; }
             string[] pdfFiles = System.IO.Directory.GetFiles(this.SlideDir, "*.pdf");
             if (pdfFiles.Length > 1) { allGood = false; }
             if (pdfFiles.Length > 0)
             {
                 FileInfo pdfInfo = new FileInfo(pdfFiles[0]);
-                if (pdfInfo.Length > 20000000) { allGood = false; }
+                if (pdfInfo.Length > 1000000 * this.maxFileSizeMB) { allGood = false; }
             }
             if (this.debug) { logWrite("total file sizes = " + totalSize + "status = " + allGood); }
             return allGood;
