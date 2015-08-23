@@ -40,6 +40,7 @@
               <a href="#" type="button" id="download-pres" class="btn btn-primary btn-med">
                 <span class="glyphicon glyphicon-floppy-save" aria-hidden="true"></span>
               </a>
+              <button type="submit" id="go-fullscreen" class="btn btn-primary btn-med" onClick="goFullscreen()"><span class="ion-arrow-expand" aria-hidden="true"></span></button>
 						</span>
 					</div>
 				</div>
@@ -62,6 +63,51 @@
 		<script src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
     <script src="/embed.js"></script>
 
+    <!-- iframe fullscreen code -->
+    <script>
+    function goFullscreen() {
+      if (
+        document.fullscreenEnabled || 
+        document.webkitFullscreenEnabled || 
+        document.mozFullScreenEnabled ||
+        document.msFullscreenEnabled
+      ) {
+
+        //check if already fullscreen
+        if (
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
+          document.msFullscreenElement
+        ) {
+          // exit full-screen
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+        }else{
+          var i = document.getElementById("wrap");
+          // go full-screen
+          if (i.requestFullscreen) {
+            i.requestFullscreen();
+          } else if (i.webkitRequestFullscreen) {
+            i.webkitRequestFullscreen();
+          } else if (i.mozRequestFullScreen) {
+            i.mozRequestFullScreen();
+          } else if (i.msRequestFullscreen) {
+            i.msRequestFullscreen();
+          }
+        }
+
+      }
+    }
+    </script>
+    <!-- end iframe fullscreen code -->
 	
 		<!-- google analytics code -->
 		<script>
