@@ -1,5 +1,7 @@
 # slideTracker
-Welcome to our slideTracker dev site. Since we just just started developing we appreciate help and discourage harsh criticism :) We are operating under the MIT license, so please feel free to fork and contribute as much as you want!
+Welcome to our slideTracker dev site. We have recently shut down our production server due to high monthly cost, but if you are interested in using or further developing slideTracker, feel free to fork our repo and contact us with any questions you might have. Below the leagcy documentation.
+
+# ----- Legacy docs -----
 
 ## What is SlideTracker
 SlideTracker provides a convenient way for a PowerPoint presentation to be broadcasted online. This way the audience can follow along on their own device and navigate through the slides independently if needed. All this is happening with as little set-up as possible. All it takes on the presenter side is to install our PowerPoint add-in and a single click to start broadcasting. For the audience it simply requires a browser (mobile or otherwise) and a unique presentation ID displayed on the presenter's slides.
